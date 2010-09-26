@@ -158,6 +158,12 @@ struct plutoOptions{
 
     /* No output from Pluto if everything goes right */
     int silent;
+
+    int gpuloc;
+
+    char *type;
+
+    int tile_size;
 };
 typedef struct plutoOptions PlutoOptions;
 

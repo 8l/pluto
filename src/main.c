@@ -36,6 +36,7 @@
 #include "post_transform.h"
 #include "ddg.h"
 #include "program.h"
+#include "gpuloc.h"
 
 PlutoOptions *options;
 
@@ -97,6 +98,9 @@ int main(int argc, char *argv[])
         {"nobound", no_argument, &options->nobound, 1},
         {"scalpriv", no_argument, &options->scalpriv, 1},
         {"isldep", no_argument, &options->isldep, 1},
+        {"gpuloc", no_argument, &options->gpuloc, 1},
+        {"type", required_argument, 0, 't'},
+        {"tile-size", required_argument, 0, 'S'},
         {0, 0, 0, 0}
     };
 
@@ -118,6 +122,9 @@ int main(int argc, char *argv[])
                 break;
             case 'L':
                 options->cloogl = atoi(optarg);
+                break;
+            case 'S':
+                options->tile_size = atoi(optarg);
                 break;
             case 'b':
                 options->bee = 1;
@@ -151,6 +158,9 @@ int main(int argc, char *argv[])
                 break;
             case 'q':
                 options->silent = 1;
+                break;
+            case 't':
+                options->type = strdup(optarg);
                 break;
             case 'u':
                 options->ufactor = atoi(optarg);
@@ -272,6 +282,9 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 
         print_hyperplane_properties(prog->hProps, prog->num_hyperplanes);
     }
+
+    if (options->gpuloc)
+        return gpuloc(prog, options, srcFileName);
 
     if (options->tile)   {
         pluto_tile(prog);

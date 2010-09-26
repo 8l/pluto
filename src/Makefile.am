@@ -15,6 +15,10 @@ pluto_SOURCES = \
 	pluto.c \
 	post_transform.c \
 	framework.c \
+	gpucode.c \
+	gpucode.h \
+	gpuloc.c \
+	gpuloc.h \
 	main.c \
 	constraints.h \
 	math_support.h \

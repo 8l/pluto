@@ -1120,11 +1120,18 @@ PlutoOptions *pluto_options_alloc()
 
     options->silent = 0;
 
+    options->gpuloc = 0;
+
+    options->type = NULL;
+
+    options->tile_size = DEFAULT_L1_TILE_SIZE;
+
     return options;
 }
 
 
 void pluto_options_free(PlutoOptions *options)
 {
+    free(options->type);
     free(options);
 }
