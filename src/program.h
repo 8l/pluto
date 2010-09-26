@@ -19,6 +19,8 @@
  */
 #ifndef _PROGRAM_H
 
+#include <isl_dim.h>
+
 #include "pluto.h"
 #include "clan/clan.h"
 #include "candl/candl.h"
@@ -36,5 +38,8 @@ void pluto_prog_free(PlutoProg *prog);
 
 PlutoOptions *pluto_options_alloc();
 void pluto_options_free(PlutoOptions *);
+
+__isl_give isl_dim *set_dim_names(__isl_take isl_dim *dim,
+        enum isl_dim_type type, char **names);
 
 #endif
