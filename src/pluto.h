@@ -22,6 +22,8 @@
 
 #include <stdbool.h>
 
+#include <isl/ctx.h>
+
 #include "math_support.h"
 #include "constraints.h"
 #include "ddg.h"
@@ -264,6 +266,8 @@ struct hyperplane_properties{
 typedef struct hyperplane_properties HyperplaneProperties;
 
 struct plutoProg{
+    isl_ctx *ctx;
+
     /* Array of statements */
     Stmt *stmts;
     int nstmts;
