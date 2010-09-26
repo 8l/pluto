@@ -19,6 +19,8 @@
  */
 #ifndef _PROGRAM_H
 
+#include <isl/dim.h>
+
 #include "pluto.h"
 #include "clan/clan.h"
 #include "candl/candl.h"
@@ -33,5 +35,8 @@ int read_tile_sizes(int *tile_sizes, int *l2_tile_size_ratios);
 
 PlutoProg *scop_to_pluto_prog(scoplib_scop_p scop, PlutoOptions *options);
 void pluto_prog_free(PlutoProg *prog);
+
+__isl_give isl_dim *set_dim_names(__isl_take isl_dim *dim,
+        enum isl_dim_type type, char **names);
 
 #endif

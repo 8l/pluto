@@ -430,7 +430,7 @@ static PlutoConstraints *isl_basic_map_to_pluto_inequalities(
 /* Set the dimension names of type "type" according to the elements
  * in the array "names".
  */
-static __isl_give isl_dim *set_names(__isl_take isl_dim *dim,
+__isl_give isl_dim *set_dim_names(__isl_take isl_dim *dim,
         enum isl_dim_type type, char **names)
 {
     int i;
@@ -764,7 +764,7 @@ static void compute_deps(scoplib_scop_p scop, PlutoProg *prog,
     scoplib_statement_p stmt;
 
     dim = isl_dim_set_alloc(prog->ctx, scop->nb_parameters, 0);
-    dim = set_names(dim, isl_dim_param, scop->parameters);
+    dim = set_dim_names(dim, isl_dim_param, scop->parameters);
     context = scoplib_matrix_to_isl_set(scop->context, isl_dim_copy(dim));
 
     if (!options->rar)
@@ -784,16 +784,16 @@ static void compute_deps(scoplib_scop_p scop, PlutoProg *prog,
         snprintf(name, sizeof(name), "S_%d", i);
 
         dim = isl_dim_set_alloc(prog->ctx, scop->nb_parameters, stmt->nb_iterators);
-        dim = set_names(dim, isl_dim_param, scop->parameters);
-        dim = set_names(dim, isl_dim_set, stmt->iterators);
+        dim = set_dim_names(dim, isl_dim_param, scop->parameters);
+        dim = set_dim_names(dim, isl_dim_set, stmt->iterators);
         dim = isl_dim_set_tuple_name(dim, isl_dim_set, name);
         dom = scoplib_matrix_list_to_isl_set(stmt->domain, dim);
         dom = isl_set_intersect(dom, isl_set_copy(context));
 
         dim = isl_dim_alloc(prog->ctx, scop->nb_parameters, stmt->nb_iterators,
                             2 * stmt->nb_iterators + 1);
-        dim = set_names(dim, isl_dim_param, scop->parameters);
-        dim = set_names(dim, isl_dim_in, stmt->iterators);
+        dim = set_dim_names(dim, isl_dim_param, scop->parameters);
+        dim = set_dim_names(dim, isl_dim_in, stmt->iterators);
         dim = isl_dim_set_tuple_name(dim, isl_dim_in, name);
         schedule_i = scoplib_schedule_to_isl_map(stmt->schedule, dim);
 
