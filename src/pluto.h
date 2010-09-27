@@ -23,6 +23,8 @@
 #include <stdbool.h>
 
 #include <isl_ctx.h>
+#include <isl_set.h>
+#include <isl_union_map.h>
 
 #include "math_support.h"
 #include "constraints.h"
@@ -166,6 +168,9 @@ struct statement{
 
     PlutoConstraints *domain;
 
+    /* isl representation of iteration domain */
+    isl_set *isl_domain;
+
     /* Original iterator names */
     char **iterators;
 
@@ -267,6 +272,15 @@ typedef struct hyperplane_properties HyperplaneProperties;
 
 struct plutoProg{
     isl_ctx *ctx;
+
+    /* Set of parameter values */
+    isl_set *context;
+
+    /* All read accesses in the entire program */
+    isl_union_map *read;
+
+    /* All write accesses in the entire program */
+    isl_union_map *write;
 
     /* Array of statements */
     Stmt *stmts;
