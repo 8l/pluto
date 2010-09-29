@@ -146,7 +146,16 @@ configureopts="--with-isl-builddir=../isl --enable-static --disable-shared"
  ./configure ${configureopts}
  )
 
+
 AC_PATH_PROGS(BASH, bash)
+
+AC_CONFIG_SUBDIRS(barvinok)
+AC_CONFIG_COMMANDS_POST([
+        ac_configure_args="$ac_configure_args \
+                --enable-static --disable-shared \
+                --without-piplib --without-zsolve \
+                --with-isl-builddir=$SOURCE_DIR/isl"
+])
 
 AC_OUTPUT(Makefile \
           src/Makefile \

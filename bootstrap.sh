@@ -23,3 +23,5 @@ cd ..
 cd piplib-1.4.0
 ./autogen.sh
 cd ..
+
+(cd barvinok; ./autogen.sh)

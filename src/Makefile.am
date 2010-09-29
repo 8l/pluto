@@ -14,10 +14,11 @@ pluto_CPPFLAGS = -DSCOPLIB_INT_T_IS_LONGLONG -DCLOOG_INT_GMP \
    -I../clan-0.6.0/include \
    -I../clan-0.6.0/scoplib/scoplib-0.2.0/include \
    -I../candl-0.4.0/include \
-   -I../isl/include -I../cloog-isl/include
+   -I../isl/include -I../cloog-isl/include \
+   -I../barvinok/polylib/include -I../barvinok
 pluto_LDADD = ../candl-0.4.0/source/libcandl.la \
    ../clan-0.6.0/source/libclan.la \
    ../piplib-1.4.0/libpiplib64.la \
-   ../cloog-isl/libcloog-isl.la ../isl/libisl.la -lm
+   ../cloog-isl/libcloog-isl.la ../barvinok/libbarvinok.la ../isl/libisl.la \
+   -lm -lstdc++
 INCLUDES = 
-
