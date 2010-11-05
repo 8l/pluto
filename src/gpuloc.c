@@ -1196,9 +1196,9 @@ static void print_kernel_body(struct localizer_info *loc,
 
     sched = insert_threading(loc, sched, max_len);
 
-    sched = add_sync_sched(sched, max_len, seq_domain, "__syncthreads", -1);
-    sched = add_sync_sched(sched, max_len, seq_domain, "__syncthreads", 1);
-    sched = add_sync_sched(sched, max_len, seq_domain, "__syncthreads", 4);
+    sched = add_sync_sched(sched, max_len, seq_domain, "sync1", -1);
+    sched = add_sync_sched(sched, max_len, seq_domain, "sync2", 1);
+    sched = add_sync_sched(sched, max_len, seq_domain, "sync3", 4);
     sched = add_sync_sched(sched, max_len, seq_domain, "swap_buffers", 5);
 
     sched = parameterize_range(loc, sched, max_len);
@@ -1210,7 +1210,7 @@ static void print_kernel_body(struct localizer_info *loc,
 
     max_len -= loc->gpu_len - 1;
 
-    fprintf(loc->kernel_c, "    int s, dummy");
+    fprintf(loc->kernel_c, "    int s");
     for (i = 0; i < loc->tile_len - 1; ++i)
         fprintf(loc->kernel_c, ", t%d", i);
     for (i = 0; i < max_len - (loc->tile_len + 1); ++i)
@@ -1742,6 +1742,9 @@ static void print_defines(struct localizer_info *loc)
     fprintf(loc->kernel_c, "#define threadIdx_x ((int)threadIdx.x)\n");
     fprintf(loc->kernel_c, "#define threadIdx_y ((int)threadIdx.y)\n");
     fprintf(loc->kernel_c, "#define threadIdx_z ((int)threadIdx.z)\n");
+    fprintf(loc->kernel_c, "#define sync1 __syncthreads\n");
+    fprintf(loc->kernel_c, "#define sync2 __syncthreads\n");
+    fprintf(loc->kernel_c, "#define sync3 __syncthreads\n");
 }
 
 /* Compute the number of shared memory locations needed per array
