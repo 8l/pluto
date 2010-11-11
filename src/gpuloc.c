@@ -1384,7 +1384,7 @@ static void print_kernel(struct localizer_info *loc,
  * From the access relation, we construct a mapping D -> [D -> A].
  * Combining the mappings D -> [D -> A], [D -> A] -> [S -> A] and
  * [S -> A] -> N, we obtain a mapping D -> N.
- * Note that each of these mapping is single-valued.
+ * Note that each of these mappings is single-valued.
  */
 static void extract_access(struct localizer_info *loc, Stmt *stmt,
     char *buffer, int identifier, int identifier_len,
