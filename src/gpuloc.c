@@ -1396,6 +1396,7 @@ static void extract_access(struct localizer_info *loc, Stmt *stmt,
     int pos = 0;
     isl_ctx *ctx;
     isl_dim *dim;
+    isl_set *dom;
     isl_map *map, *id;
     isl_union_map *umap;
     isl_pw_qpolynomial *pwqp;
@@ -1446,6 +1447,9 @@ static void extract_access(struct localizer_info *loc, Stmt *stmt,
     dim = isl_dim_set_tuple_name(dim, isl_dim_set, name);
     pwqp = isl_union_pw_qpolynomial_extract_pw_qpolynomial(rho, dim);
     pwqp = isl_pw_qpolynomial_coalesce(pwqp);
+
+    dom = isl_map_domain(isl_map_copy(time_loop_proj));
+    pwqp = isl_pw_qpolynomial_gist(pwqp, dom);
 
     fprintf(loc->kernel_c, "L_");
     fwrite(stmt->text + identifier, 1, identifier_len, loc->kernel_c);
