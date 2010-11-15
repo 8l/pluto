@@ -2150,14 +2150,72 @@ static void select_tile_dimensions(struct localizer_info *loc,
     loc->tiled_len = loc->len + loc->tile_len;
 }
 
-/* Extract the schedule computed by Pluto and apply skewing and tiling.
+/* Assuming that among the "tile_len" dimensions starting at "first"
+ * there is at most one non-parallel loop, construct a map that
+ * moves it to position "first".  If there is no non-parallel loop,
+ * then an identity transformation is returned.
+ */
+static __isl_give isl_map *move_non_parallel_first(__isl_take isl_dim *dim,
+    HyperplaneProperties *hProps, int len, int first, int tile_len)
+{
+    int i;
+    int np;
+    isl_int v;
+    isl_basic_map *bmap;
+    isl_constraint *c;
+
+    np = 0;
+    for (i = 0; i < tile_len; ++i)
+        if (hProps[first + i].dep_prop != PARALLEL) {
+            np = i;
+            break;
+        }
+
+    isl_int_init(v);
+
+    dim = isl_dim_add(dim, isl_dim_in, len);
+    dim = isl_dim_add(dim, isl_dim_out, len);
+    bmap = isl_basic_map_universe(isl_dim_copy(dim));
+
+    for (i = 0; i < len; ++i) {
+        int j;
+
+        if (i < first || i > first + np)
+            j = i;
+        else if (i == first)
+            j = first + np;
+        else
+            j = i - 1;
+        c = isl_equality_alloc(isl_dim_copy(dim));
+        isl_int_set_si(v, -1);
+        isl_constraint_set_coefficient(c, isl_dim_in, j, v);
+        isl_int_set_si(v, 1);
+        isl_constraint_set_coefficient(c, isl_dim_out, i, v);
+        bmap = isl_basic_map_add_constraint(bmap, c);
+    }
+
+    isl_dim_free(dim);
+    isl_int_clear(v);
+
+    return isl_map_from_basic_map(bmap);
+}
+
+/* Extract the schedule computed by Pluto and apply skewing (if needed)
+ * and tiling.
  */
 static __isl_give isl_union_map *compute_global_schedule(
     struct localizer_info *loc, PlutoProg *prog, PlutoOptions *options)
 {
+    int i;
     isl_dim *dim;
-    isl_map *tiling, *front;
+    isl_map *tiling, *front, *reorder;
     isl_union_map *schedule;
+    int n_non_parallel;
+
+    n_non_parallel = 0;
+    for (i = 0; i < loc->tile_len; ++i)
+        if (prog->hProps[loc->first + i].dep_prop != PARALLEL)
+            n_non_parallel++;
 
     schedule = extract_schedule(prog);
 
@@ -2166,11 +2224,19 @@ static __isl_give isl_union_map *compute_global_schedule(
     tiling = tile(isl_dim_copy(dim), loc->len, loc->first, loc->tile_len,
                     options->tile_size);
 
-    front = wavefront(isl_dim_copy(dim), loc->len, loc->first, loc->tile_len);
-    tiling = isl_map_apply_range(front, tiling);
+    if (n_non_parallel <= 1) {
+        reorder = move_non_parallel_first(dim, prog->hProps,
+                                          loc->len, loc->first, loc->tile_len);
+        tiling = isl_map_apply_range(reorder, tiling);
+    } else {
+        front = wavefront(isl_dim_copy(dim),
+                          loc->len, loc->first, loc->tile_len);
+        tiling = isl_map_apply_range(front, tiling);
 
-    front = wavefront(dim, loc->len + loc->tile_len, loc->first, loc->tile_len);
-    tiling = isl_map_apply_range(tiling, front);
+        front = wavefront(dim,
+                          loc->len + loc->tile_len, loc->first, loc->tile_len);
+        tiling = isl_map_apply_range(tiling, front);
+    }
 
     schedule = isl_union_map_apply_range(schedule,
                                          isl_union_map_from_map(tiling));
@@ -2201,12 +2267,15 @@ static void compute_max_transfer_size(struct localizer_info *loc)
  * coordinate directions.
  *
  * We first select a sequence of two loops to tile.
- * Then we skew these two loop such that the outer of the two
+ * If neither of these two loops is parallel,
+ * then we skew the two loop such that the outer of the two
  * carries all dependences carried by the original two loops.
  * In particular, we apply a skew S := {[i,j] -> [i+j,j]}.
+ * If, on the other hand, one of the two loops is parallel, we
+ * simply move the non-parallel loop (if any) into the first position.
  * The two loops are then tiled with tile size options->tile_size.
- * Finally, the tile loops are skewed again to ensure that the outer
- * tile dimension carries all dependences.
+ * Finally, if skewing was needed, the tile loops are skewed again
+ * to ensure that the outer tile dimension carries all dependences.
  *
  * In summary, let P be the transformation computed by Pluto, then
  * the final schedule is
