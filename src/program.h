@@ -19,7 +19,7 @@
  */
 #ifndef _PROGRAM_H
 
-#include <isl_dim.h>
+#include <isl/dim.h>
 
 #include "pluto.h"
 #include "clan/clan.h"

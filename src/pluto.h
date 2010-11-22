@@ -22,9 +22,9 @@
 
 #include <stdbool.h>
 
-#include <isl_ctx.h>
-#include <isl_set.h>
-#include <isl_union_map.h>
+#include <isl/ctx.h>
+#include <isl/set.h>
+#include <isl/union_map.h>
 
 #include "math_support.h"
 #include "constraints.h"

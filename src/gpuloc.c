@@ -4,9 +4,9 @@
 #include <limits.h>
 #include <string.h>
 
-#include <isl_constraint.h>
-#include <isl_union_map.h>
-#include <isl_union_set.h>
+#include <isl/constraint.h>
+#include <isl/union_map.h>
+#include <isl/union_set.h>
 #include <cloog/isl/cloog.h>
 
 #include "gpuloc.h"
