@@ -20,6 +20,8 @@ pluto_SOURCES = \
 	gpucode.h \
 	cuda_common.h \
 	cuda_common.c \
+	cuda.c \
+	cuda.h \
 	main.c \
 	constraints.h \
 	math_support.h \

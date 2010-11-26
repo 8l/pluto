@@ -159,6 +159,14 @@ struct plutoOptions{
 
     /* No output from Pluto if everything goes right */
     int silent;
+
+    int cuda;
+    int cuda_scale_tile_loops;
+    int cuda_wrap;
+
+    char *type;
+
+    int tile_size;
 };
 typedef struct plutoOptions PlutoOptions;
 
