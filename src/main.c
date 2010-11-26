@@ -40,7 +40,98 @@
 
 PlutoOptions *options;
 
-void usage_message();
+static struct isl_arg_choice fuse_choice[] = {
+    {"no",    NO_FUSE},
+    {"max",   MAXIMAL_FUSE},
+    {"smart", SMART_FUSE},
+    {0}
+};
+
+static struct isl_arg_choice dep_choice[] = {
+    {"clan",  DEP_CLAN},
+    {"isl",   DEP_ISL},
+    {0}
+};
+
+static void print_version()
+{
+    printf("PLUTO 0.6.0 - An automatic parallelizer and locality optimizer\n\
+Copyright (C) 2007--2008  Uday Kumar Bondhugula\n\
+This is free software; see the source for copying conditions.  There is NO\n\
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n");
+}
+
+struct isl_arg options_arg[] = {
+ISL_ARG_CHILD(PlutoOptions, isl, "isl", isl_options_arg, "isl options")
+ISL_ARG_BOOL(PlutoOptions, tile, 0, "tile", 0, "Tile for locality")
+ISL_ARG_BOOL(PlutoOptions, parallel, 0, "parallel", 0,
+    "Automatically parallelize using OpenMP pragmas")
+ISL_ARG_ALIAS("parallelize")
+ISL_ARG_BOOL(PlutoOptions, l2tile, 0, "l2tile", 0,
+    "Tile a second time (typically for L2 cache)")
+ISL_ARG_BOOL(PlutoOptions, multipipe, 0, "multipipe", 0,
+    "Extract two degrees of pipelined parallelism if possible; "
+    "by default one degree is extracted (if it exists)")
+ISL_ARG_BOOL(PlutoOptions, rar, 0, "rar", 0, "Consider RAR dependences too")
+ISL_ARG_BOOL(PlutoOptions, unroll, 0, "unroll", 0, "Unroll-jam")
+ISL_ARG_INT(PlutoOptions, ufactor, 0, "ufactor", "factor", 8,
+    "Unroll-jam factor")
+ISL_ARG_BOOL(PlutoOptions, prevector, 0, "prevector", 1,
+    "Make code amenable to compiler auto-vectorization (with ICC)")
+/* Default context is no context */
+ISL_ARG_INT(PlutoOptions, context, 0, "context", "context", -1,
+    "Lower bound on parameters")
+ISL_ARG_CHOICE(PlutoOptions, dep, 0, "dep", dep_choice, DEP_CLAN,
+    "Dependence tester")
+ISL_ARG_BOOL(PlutoOptions, lastwriter, 0, "lastwriter", 0,
+    "Work with refined dependences "
+    "(last conflicting access is computed for RAW/WAW)")
+ISL_ARG_BOOL(PlutoOptions, bee, 0, "bee", 0, "Generate pragmas for Bee+Cl@k")
+ISL_ARG_PHANTOM_BOOL('i', "indent", NULL, "Indent generated code")
+ISL_ARG_BOOL(PlutoOptions, silent, 'q', "silent", 0,
+    "Silent mode; no output as long as everything goes fine")
+ISL_ARG_CHOICE(PlutoOptions, fuse, 0, "fuse", fuse_choice, SMART_FUSE,
+    "Fusion heuristic; no: do not fuse across SCCs of data dependence graph; "
+    "max: maximal fusion; smart: heuristic (in between no and max)")
+ISL_ARG_BOOL(PlutoOptions, debug, 0, "debug", 0, "Verbose output")
+ISL_ARG_BOOL(PlutoOptions, moredebug, 0, "moredebug", 0, "More verbose output")
+ISL_ARG_BOOL(PlutoOptions, gpuloc, 0, "gpuloc", 0, "Localize for GPU")
+ISL_ARG_STR(PlutoOptions, type, 't', "type", "type", "float",
+    "Element type of arrays")
+ISL_ARG_INT(PlutoOptions, tile_size, 'S', "tile-size", "size",
+    DEFAULT_L1_TILE_SIZE, NULL)
+/* Override for first and last levels to tile */
+ISL_ARG_INT_F(PlutoOptions, ft, 0, "ft", NULL, -1, NULL, ISL_ARG_HIDDEN)
+ISL_ARG_INT_F(PlutoOptions, lt, 0, "lt", NULL, -1, NULL, ISL_ARG_HIDDEN)
+/* Override for first and last cloog options */
+ISL_ARG_INT_F(PlutoOptions, cloogf, 0, "cloogf", NULL, -1, NULL, ISL_ARG_HIDDEN)
+ISL_ARG_INT_F(PlutoOptions, cloogl, 0, "cloogl", NULL, -1, NULL, ISL_ARG_HIDDEN)
+/* Experimental */
+ISL_ARG_BOOL_F(PlutoOptions, polyunroll, 0, "polyunroll", 0, NULL,
+    ISL_ARG_HIDDEN)
+ISL_ARG_BOOL_F(PlutoOptions, bound, 0, "bound", 1, NULL, ISL_ARG_HIDDEN)
+ISL_ARG_BOOL_F(PlutoOptions, scalpriv, 0, "scalpriv", 0, NULL, ISL_ARG_HIDDEN)
+ISL_ARG_VERSION(&print_version)
+ISL_ARG_END
+};
+
+ISL_ARG_DEF(options, PlutoOptions, options_arg)
+
+struct plutoArg {
+    PlutoOptions *options;
+    char *srcFileName;
+};
+typedef struct plutoArg PlutoArg;
+
+struct isl_arg arg_arg[] = {
+ISL_ARG_CHILD(PlutoArg, options, NULL, options_arg, NULL)
+ISL_ARG_ARG(PlutoArg, srcFileName, "input", NULL)
+ISL_ARG_FOOTER("To report bugs, please send an email to "
+    "<pluto-development@googlegroups.com>")
+ISL_ARG_END
+};
+
+ISL_ARG_DEF(arg, PlutoArg, arg_arg)
 
 int main(int argc, char *argv[])
 {
@@ -48,148 +139,22 @@ int main(int argc, char *argv[])
 
     FILE *src_fp;
 
-    int option;
-    int option_index = 0;
-
-    char srcFileName[256];
     char outFileName[256] = "";
 
     char cloogFileName[256];
     FILE *cloogfp, *outfp;
 
-    if (argc <= 1)  {
-        usage_message();
-        return 1;
-    }
+    PlutoArg *arg;
 
-    options = pluto_options_alloc();
+    arg = arg_new_with_defaults();
+    argc = arg_parse(arg, argc, argv, ISL_ARG_ALL);
+    options = arg->options;
 
-    const struct option pluto_options[] =
-    {
-        {"tile", no_argument, &options->tile, 1},
-        {"notile", no_argument, &options->tile, 0},
-        {"debug", no_argument, &options->debug, true},
-        {"moredebug", no_argument, &options->moredebug, true},
-        {"rar", no_argument, &options->rar, 1},
-        {"nofuse", no_argument, &options->fuse, NO_FUSE},
-        {"maxfuse", no_argument, &options->fuse, MAXIMAL_FUSE},
-        {"smartfuse", no_argument, &options->fuse, SMART_FUSE},
-        {"parallel", no_argument, &options->parallel, 1},
-        {"parallelize", no_argument, &options->parallel, 1},
-        {"unroll", no_argument, &options->unroll, 1},
-        {"nounroll", no_argument, &options->unroll, 0},
-        {"polyunroll", no_argument, &options->polyunroll, 1},
-        {"bee", no_argument, &options->bee, 1},
-        {"ufactor", required_argument, 0, 'u'},
-        {"prevector", no_argument, &options->prevector, 1},
-        {"noprevector", no_argument, &options->prevector, 0},
-        {"context", required_argument, 0, 'c'},
-        {"cloogf", required_argument, 0, 'F'},
-        {"cloogl", required_argument, 0, 'L'},
-        {"ft", required_argument, 0, 'f'},
-        {"lt", required_argument, 0, 'l'},
-        {"multipipe", no_argument, &options->multipipe, 1},
-        {"l2tile", no_argument, &options->l2tile, 1},
-        {"version", no_argument, 0, 'v'},
-        {"help", no_argument, 0, 'h'},
-        {"indent", no_argument, 0, 'i'},
-        {"silent", no_argument, &options->silent, 1},
-        {"lastwriter", no_argument, &options->lastwriter, 1},
-        {"nobound", no_argument, &options->nobound, 1},
-        {"scalpriv", no_argument, &options->scalpriv, 1},
-        {"isldep", no_argument, &options->isldep, 1},
-        {"gpuloc", no_argument, &options->gpuloc, 1},
-        {"type", required_argument, 0, 't'},
-        {"tile-size", required_argument, 0, 'S'},
-        {0, 0, 0, 0}
-    };
-
-
-    /* Read command-line options */
-    while (1) {
-        option = getopt_long(argc, argv, "bhiqvf:l:F:L:c:", pluto_options,
-                &option_index);
-
-        if (option == -1)   {
-            break;
-        }
-
-        switch (option) {
-            case 0:
-                break;
-            case 'F':
-                options->cloogf = atoi(optarg);
-                break;
-            case 'L':
-                options->cloogl = atoi(optarg);
-                break;
-            case 'S':
-                options->tile_size = atoi(optarg);
-                break;
-            case 'b':
-                options->bee = 1;
-                break;
-            case 'c':
-                options->context = atoi(optarg);
-                break;
-            case 'd':
-                break;
-            case 'f':
-                options->ft = atoi(optarg);
-                break;
-            case 'g':
-                break;
-            case 'h':
-                usage_message();
-                return 1;
-            case 'i':
-                /* Handled in polycc */
-                break;
-            case 'l':
-                options->lt = atoi(optarg);
-                break;
-            case 'm':
-                break;
-            case 'n':
-                break;
-            case 's':
-                break;
-            case 'p':
-                break;
-            case 'q':
-                options->silent = 1;
-                break;
-            case 't':
-                options->type = strdup(optarg);
-                break;
-            case 'u':
-                options->ufactor = atoi(optarg);
-                break;
-            case 'v':
-                printf("PLUTO 0.6.0 - An automatic parallelizer and locality optimizer\n\
-Copyright (C) 2007--2008  Uday Kumar Bondhugula\n\
-This is free software; see the source for copying conditions.  There is NO\n\
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n");
-                return 1;
-            default:
-                usage_message();
-                return 2;
-        }
-    }
-
-
-    if (optind <= argc-1)   {
-        strncpy(srcFileName, argv[optind], 250);
-    }else{
-        /* No non-option argument was specified */
-        usage_message();
-        return 3;
-    }
-
-    src_fp  = fopen(srcFileName, "r");
+    src_fp  = fopen(arg->srcFileName, "r");
 
     if (!src_fp)   {
-        fprintf(stderr, "pluto: error opening source file: '%s'\n", srcFileName);
+        fprintf(stderr, "pluto: error opening source file: '%s'\n",
+                        arg->srcFileName);
         return 5;
     }
 
@@ -202,7 +167,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 
     if (!scop || !scop->statement)   {
         fprintf(stderr, "Error extracting polyhedra from source file: \'%s'\n",
-                srcFileName);
+                arg->srcFileName);
         return 1;
     }
 
@@ -283,8 +248,11 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
         print_hyperplane_properties(prog->hProps, prog->num_hyperplanes);
     }
 
-    if (options->gpuloc)
-        return gpuloc(prog, options, srcFileName);
+    if (options->gpuloc) {
+        int r = gpuloc(prog, options, arg->srcFileName);
+        arg_free(arg);
+        return r;
+    }
 
     if (options->tile)   {
         pluto_tile(prog);
@@ -353,8 +321,8 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
     }
 
     /* The .cloog file name */
-    strcpy(cloogFileName, srcFileName);
-    cloogFileName[strlen(srcFileName)-2] = '\0';
+    strcpy(cloogFileName, arg->srcFileName);
+    cloogFileName[strlen(arg->srcFileName)-2] = '\0';
 
     if (options->parallel && options->multipipe)   {
         strcat(cloogFileName, ".par2d.cloog");
@@ -369,8 +337,8 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
     cloogfp = fopen(cloogFileName, "w+");
 
     /* Remove .c extension and append a new one */
-    strcpy(outFileName, srcFileName);
-    outFileName[strlen(srcFileName)-2] = '\0';
+    strcpy(outFileName, arg->srcFileName);
+    outFileName[strlen(arg->srcFileName)-2] = '\0';
     strcat(outFileName, ".pluto.c");
 
     outfp = fopen(outFileName, "w");
@@ -401,39 +369,9 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 
     fclose(cloogfp);
 
-    pluto_options_free(options);
+    arg_free(arg);
 
     pluto_prog_free(prog);
 
     return 0;
-}
-
-
-void usage_message(void)
-{
-    fprintf(stdout, "Usage: polycc <input.c> [options]\n");
-    fprintf(stdout, "\nOptions:\n");
-    fprintf(stdout, "       --tile                 Tile for locality\n");
-    fprintf(stdout, "       --parallel             Automatically parallelize using OpenMP pragmas\n");
-    fprintf(stdout, "       | --parallelize\n");
-    fprintf(stdout, "       --l2tile               Tile a second time (typically for L2 cache) - disabled by default \n");
-    fprintf(stdout, "       --multipipe            Extract two degrees of pipelined parallelism if possible;\n");
-    fprintf(stdout, "                                 by default one degree is extracted (if it exists)\n");
-    fprintf(stdout, "       --rar                  Consider RAR dependences too (disabled by default)\n");
-    fprintf(stdout, "       --[no]unroll           Unroll-jam (disabled by default)\n");
-    fprintf(stdout, "       --ufactor=<factor>     Unroll-jam factor (default is 8)\n");
-    fprintf(stdout, "       --[no]prevector        Make code amenable to compiler auto-vectorization (with ICC) - enabled by default\n");
-    fprintf(stdout, "       --context=<context>    Parameters are at least as much as <context>\n");
-    fprintf(stdout, "       --bee                  Generate pragmas for Bee+Cl@k\n\n");
-    fprintf(stdout, "       --indent  | -i         Indent generated code (disabled by default)\n");
-    fprintf(stdout, "       --silent  | -q         Silent mode; no output as long as everything goes fine (disabled by default)\n");
-    fprintf(stdout, "       --help    | -h         Print this help menu\n");
-    fprintf(stdout, "       --version | -v         Display version number\n");
-    fprintf(stdout, "\n   Fusion                Options to control fusion heuristic\n");
-    fprintf(stdout, "       --nofuse               Do not fuse across SCCs of data dependence graph\n");
-    fprintf(stdout, "       --maxfuse              Maximal fusion\n");
-    fprintf(stdout, "       --smartfuse [default]  Heuristic (in between nofuse and maxfuse)\n");
-    fprintf(stdout, "\n   Debugging\n");
-    fprintf(stdout, "       --debug        Verbose output\n");
-    fprintf(stdout, "\nTo report bugs, please send an email to <pluto-development@googlegroups.com>\n\n");
 }

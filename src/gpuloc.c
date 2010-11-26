@@ -2307,14 +2307,14 @@ static void compute_max_transfer_size(struct localizer_info *loc)
  * for copying code in and out of shared memory and for synchronization
  * and code is generated for each kernel by calling CLooG.
  *
- * The function frees "prog" and "options".
+ * The function frees "prog".
  */
 int gpuloc(PlutoProg *prog, PlutoOptions *options, const char *input)
 {
     struct localizer_info loc;
 
     loc.state = cloog_isl_state_malloc(prog->ctx);
-    loc.type = options->type ? options->type : "float";
+    loc.type = options->type;
     loc.prog = prog;
 
     open_files(&loc, input);
@@ -2331,7 +2331,6 @@ int gpuloc(PlutoProg *prog, PlutoOptions *options, const char *input)
     free_array_info(&loc);
     isl_union_map_free(loc.sched);
     cloog_state_free(loc.state);
-    pluto_options_free(options);
     pluto_prog_free(prog);
 
     close_files(&loc);

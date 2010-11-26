@@ -52,5 +52,5 @@ test: .PHO
 .PHO: 
 	./test.sh
 	./test.sh --tile --parallel --unroll
-	./test.sh --maxfuse
-	./test.sh --nofuse
+	./test.sh --fuse=max
+	./test.sh --fuse=no

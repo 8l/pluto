@@ -40,6 +40,9 @@
 /* Something in between the above two */
 #define SMART_FUSE 2
 
+#define DEP_CLAN 0
+#define DEP_ISL 1
+
 /* max for various things */
 #define MAX_VARS 100
 #define MAX_PARS 100
@@ -74,6 +77,7 @@
 
 
 struct plutoOptions{
+    struct isl_options *isl;
 
     /* To tile or not? */
     int tile;
@@ -96,9 +100,6 @@ struct plutoOptions{
 
     /* Decides the fusion algorithm (MAXIMAL_FUSE, NO_FUSE, or SMART_FUSE) */
     int fuse;
-
-    /* for debugging - print default cloog-style total */
-    int scancount;
 
     /* parameters will be more than at least this much */
     /* setting parameter context for cloog */
@@ -144,14 +145,14 @@ struct plutoOptions{
     /* Force this for cloog's -l */
     int cloogl;
 
-    /* Use isl to compute dependences */
-    int isldep;
+    /* Use clan or isl to compute dependences */
+    int dep;
 
     /* Use candl lastwriter */
     int lastwriter;
 
-    /* DEV: Don't use cost function */
-    int nobound;
+    /* DEV: Use cost function (default: yes) */
+    int bound;
 
     /* Ask candl to privatize */
     int scalpriv;

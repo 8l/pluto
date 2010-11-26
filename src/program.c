@@ -953,7 +953,7 @@ PlutoProg *scop_to_pluto_prog(scoplib_scop_p scop, PlutoOptions *options)
     prog->context = extract_context(prog->ctx, scop);
     prog->stmts = stmts_read(prog->ctx, scop, prog->context, prog->nvar);
     extract_accesses(scop, prog);
-    if (options->isldep) {
+    if (options->dep == DEP_ISL) {
         compute_deps(scop, prog, options);
     } else {
         prog->deps = deps_read(candl_deps, prog);
@@ -1066,72 +1066,4 @@ void pluto_prog_free(PlutoProg *prog)
     isl_ctx_free(prog->ctx);
 
     free(prog);
-}
-
-
-PlutoOptions *pluto_options_alloc()
-{
-    PlutoOptions *options;
-
-    options  = (PlutoOptions *) malloc(sizeof(PlutoOptions));
-
-    /* Initialize to default */
-    options->tile = 0;
-    options->debug = 0;
-    options->moredebug = 0;
-    options->scancount = 0;
-    options->parallel = 0;
-    options->unroll = 0;
-
-    /* Unroll/jam factor */
-    options->ufactor = 8;
-
-    /* Ignore input deps */
-    options->rar = 0;
-
-    /* Override for first and last levels to tile */
-    options->ft = -1;
-    options->lt = -1;
-
-    /* Override for first and last cloog options */
-    options->cloogf = -1;
-    options->cloogl = -1;
-
-    options->multipipe = 0;
-    options->l2tile = 0;
-    options->prevector = 1;
-    options->fuse = SMART_FUSE;
-
-    /* Experimental */
-    options->polyunroll = 0;
-
-    /* Default context is no context */
-    options->context = -1;
-
-    options->bee = 0;
-
-    options->isldep = 0;
-
-    options->lastwriter = 0;
-
-    options->nobound = 0;
-
-    options->scalpriv = 0;
-
-    options->silent = 0;
-
-    options->gpuloc = 0;
-
-    options->type = NULL;
-
-    options->tile_size = DEFAULT_L1_TILE_SIZE;
-
-    return options;
-}
-
-
-void pluto_options_free(PlutoOptions *options)
-{
-    free(options->type);
-    free(options);
 }
