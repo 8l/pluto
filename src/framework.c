@@ -347,7 +347,7 @@ static PlutoConstraints *get_permutability_constraints_nonuniform_dep(Dep *dep, 
         cst->nrows = farkas_cst->nrows;
     }
 
-    if (!options->nobound)   {
+    if (options->bound)   {
         /* Add bounding constraints */
         src_offset = npar+1+src_stmt*(nvar+1);
         dest_offset = npar+1+dest_stmt*(nvar+1);

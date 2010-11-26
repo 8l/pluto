@@ -6,14 +6,14 @@ CFLAGS=-fast -DTIME
 
 base=`dirname $1`/`basename $1 .c`
 
-fusionoptions="--maxfuse --smartfuse --nofuse"
+fusionoptions="--fuse=max --fuse=smart --fuse=no"
 
-unrolloptions="--nounroll --unroll --unroll"
+unrolloptions="--no-unroll --unroll --unroll"
 
-prevectoropts="--noprevector --prevector"
+prevectoropts="--no-prevector --prevector"
 
-tileopts="--tile --notile"
-#tileopts="--notile"
+tileopts="--tile --no-tile"
+#tileopts="--no-tile"
 
 echo > tune_log
 

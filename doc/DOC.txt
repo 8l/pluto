@@ -93,19 +93,19 @@ COMMAND-LINE OPTIONS
     it exists. In this case, the generated file will have a ".par2d.c" 
     suffixed to the basename of the input program.
 
-    --smartfuse [default]
+    --fuse=smart [default]
     This is the default fusion heuristic. Will try to fuse between SCCs 
     of the same dimensionality. 
 
-    --nofuse
+    --fuse=no
     Separate all strongly-connected components in the dependence graphs 
     to start with, i.e., no fusion across SCCs, and at any level inside.
 
-    --maxfuse 
+    --fuse=max
     This is geared towards maximal fusion (but not actually maximal 
     fusion). Fusion is done across SCCs.
 
-    --[no]unroll
+    --[no-]unroll
     Automatically identify and unroll-jam up to two loops. Not enabled 
     by default.
 
@@ -113,7 +113,7 @@ COMMAND-LINE OPTIONS
     Unroll or unroll-jam factor (default is 8). Note that if two loops
     are unroll-jammed, you will get an nxn body
 
-    --[no]prevector
+    --[no-]prevector
     Perform post-transformations to make the code amenable to 
     vectorization. Enabled by default.
 
@@ -258,11 +258,11 @@ LOOKING AT THE GENERATED CODE
 
 The best options for taking a good look at the generated code are:
 
-<pluto_dir>/polycc source.c --noprevector --tile --parallel
+<pluto_dir>/polycc source.c --no-prevector --tile --parallel
 
 or 
 
-<pluto_dir>/polycc source.c --noprevector 
+<pluto_dir>/polycc source.c --no-prevector 
 
 to just look at the transformation without the actual tiling and 
 parallelization performed; the transformation is just applied, and loop 

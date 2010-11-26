@@ -58,7 +58,7 @@ class PolyTransformator:
             sys.exit(1)
 
         # create the Pluto command
-        cmd = 'polycc %s --noprevector' % fname
+        cmd = 'polycc %s --no-prevector' % fname
         if self.parallel:
             cmd += ' --parallel'
         if use_tiling:
