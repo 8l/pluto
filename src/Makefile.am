@@ -16,12 +16,18 @@ pluto_SOURCES = \
 	pluto.c \
 	post_transform.c \
 	framework.c \
+	gpucode.c \
+	gpucode.h \
+	cuda_common.h \
+	cuda_common.c \
 	main.c \
 	constraints.h \
 	math_support.h \
 	pluto.h \
 	program.c \
 	program.h \
+	schedule.c \
+	schedule.h \
 	tile.c
 pluto_CPPFLAGS = -DSCOPLIB_INT_T_IS_LONGLONG -DCLOOG_INT_GMP \
    -I../piplib-1.4.0/include \
