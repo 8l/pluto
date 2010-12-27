@@ -5,6 +5,7 @@
 #include <cloog/isl/cloog.h>
 
 #include "pluto.h"
+#include "cuda_common.h"
 
 struct array_info {
     /* Name of the array. */
@@ -18,6 +19,8 @@ struct array_info {
 };
 
 struct localizer_info {
+    struct cuda_info cuda;
+
     /* Number of rows in the original schedule computed by Pluto. */
     int len;
     /* First tile dimension. */
@@ -35,10 +38,6 @@ struct localizer_info {
     PlutoProg *prog;
     CloogState *state;
     int indent;
-    FILE *input;
-    FILE *host_c;
-    FILE *kernel_h;
-    FILE *kernel_c;
     FILE *dst;
 
     const char *type;

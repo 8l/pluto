@@ -1210,13 +1210,13 @@ static void print_kernel_body(struct localizer_info *loc,
 
     max_len -= loc->gpu_len - 1;
 
-    fprintf(loc->kernel_c, "    int s");
+    fprintf(loc->cuda.kernel_c, "    int s");
     for (i = 0; i < loc->tile_len - 1; ++i)
-        fprintf(loc->kernel_c, ", t%d", i);
+        fprintf(loc->cuda.kernel_c, ", t%d", i);
     for (i = 0; i < max_len - (loc->tile_len + 1); ++i)
-        fprintf(loc->kernel_c, ", l%d", i);
-    fprintf(loc->kernel_c, ";\n");
-    fprintf(loc->kernel_c, "\n");
+        fprintf(loc->cuda.kernel_c, ", l%d", i);
+    fprintf(loc->cuda.kernel_c, ";\n");
+    fprintf(loc->cuda.kernel_c, "\n");
 
     options = cloog_options_malloc(loc->state);
     options->language = LANGUAGE_C;
@@ -1246,7 +1246,7 @@ static void print_kernel_body(struct localizer_info *loc,
     input = cloog_input_alloc(cloog_context, ud);
 
     stmt = cloog_clast_create_from_input(input, options);
-    clast_pprint(loc->kernel_c, stmt, 4, options);
+    clast_pprint(loc->cuda.kernel_c, stmt, 4, options);
 
     cloog_clast_free(stmt);
     cloog_options_free(options);
@@ -1291,51 +1291,51 @@ static void print_kernel(struct localizer_info *loc,
     print_indent(loc->dst, loc->indent);
     fprintf(loc->dst, "kernel%d <<<k%d_dimGrid, k%d_dimBlock>>> (dev_buffer",
             loc->kernel_id, loc->kernel_id, loc->kernel_id);
-    fprintf(loc->kernel_c,
+    fprintf(loc->cuda.kernel_c,
             "__global__ void kernel%d(%s *dev_buffer", loc->kernel_id, loc->type);
-    fprintf(loc->kernel_h,
+    fprintf(loc->cuda.kernel_h,
             "__global__ void kernel%d(%s *dev_buffer", loc->kernel_id, loc->type);
     nparam = isl_set_dim(host_domain, isl_dim_param);
     for (i = 0; i < nparam; ++i) {
         const char *name = isl_set_get_dim_name(host_domain, isl_dim_param, i);
         fprintf(loc->dst, ", %s", name);
-        fprintf(loc->kernel_c, ", int %s", name);
-        fprintf(loc->kernel_h, ", int %s", name);
+        fprintf(loc->cuda.kernel_c, ", int %s", name);
+        fprintf(loc->cuda.kernel_h, ", int %s", name);
     }
     for (i = 0; i < loc->host_len; ++i) {
         fprintf(loc->dst, ", h%d", i);
-        fprintf(loc->kernel_c, ", int h%d", i);
-        fprintf(loc->kernel_h, ", int h%d", i);
+        fprintf(loc->cuda.kernel_c, ", int h%d", i);
+        fprintf(loc->cuda.kernel_h, ", int h%d", i);
     }
     fprintf(loc->dst, ");\n");
-    fprintf(loc->kernel_c, ")\n{\n");
-    fprintf(loc->kernel_h, ");\n");
+    fprintf(loc->cuda.kernel_c, ")\n{\n");
+    fprintf(loc->cuda.kernel_h, ");\n");
     host_file = loc->dst;
-    loc->dst = loc->kernel_c;
+    loc->dst = loc->cuda.kernel_c;
     assert(loc->tile_len - 1 <= 2);
     for (i = 0; i < loc->tile_len - 1; ++i) {
         const char *dims[] = { "x", "y" };
-        fprintf(loc->kernel_c, "    int b%d = ", i);
+        fprintf(loc->cuda.kernel_c, "    int b%d = ", i);
         print_bounds(loc, bounds[0], 0);
-        fprintf(loc->kernel_c, " + blockIdx.%s;\n", dims[i]);
+        fprintf(loc->cuda.kernel_c, " + blockIdx.%s;\n", dims[i]);
     }
-    fprintf(loc->kernel_c, "    __shared__ %s L[2][", loc->type);
-    isl_pw_qpolynomial_fold_print(loc->max_shared_size, loc->kernel_c,
+    fprintf(loc->cuda.kernel_c, "    __shared__ %s L[2][", loc->type);
+    isl_pw_qpolynomial_fold_print(loc->max_shared_size, loc->cuda.kernel_c,
                                   ISL_FORMAT_C);
-    fprintf(loc->kernel_c, "];\n");
+    fprintf(loc->cuda.kernel_c, "];\n");
     for (i = 0; i < loc->n_array; ++i) {
         for (j = 0; j < 2; ++j) {
-            fprintf(loc->kernel_c, "    %s *L%s_%s = L[%d]",
+            fprintf(loc->cuda.kernel_c, "    %s *L%s_%s = L[%d]",
                     loc->type, j ? "2" : "", loc->array[i].name, j);
             for (k = 0; k < i; ++k) {
-                fprintf(loc->kernel_c, " + (");
+                fprintf(loc->cuda.kernel_c, " + (");
                 isl_pw_qpolynomial_fold_print(loc->array[k].shared_size,
-                                         loc->kernel_c, ISL_FORMAT_C);
-                fprintf(loc->kernel_c, ")");
+                                         loc->cuda.kernel_c, ISL_FORMAT_C);
+                fprintf(loc->cuda.kernel_c, ")");
             }
-            fprintf(loc->kernel_c, ";\n");
+            fprintf(loc->cuda.kernel_c, ";\n");
         }
-        fprintf(loc->kernel_c, "    %s *buffer_%s = dev_buffer",
+        fprintf(loc->cuda.kernel_c, "    %s *buffer_%s = dev_buffer",
                 loc->type, loc->array[i].name);
         for (k = 0; k < i; ++k) {
             isl_pw_qpolynomial *transfer_size;
@@ -1348,20 +1348,20 @@ static void print_kernel(struct localizer_info *loc,
                     transfer_size, isl_dim_set, j, name);
             }
 
-            fprintf(loc->kernel_c, " + (");
+            fprintf(loc->cuda.kernel_c, " + (");
             isl_pw_qpolynomial_print(transfer_size,
-                                     loc->kernel_c, ISL_FORMAT_C);
-            fprintf(loc->kernel_c, ")");
+                                     loc->cuda.kernel_c, ISL_FORMAT_C);
+            fprintf(loc->cuda.kernel_c, ")");
 
             isl_pw_qpolynomial_free(transfer_size);
         }
-        fprintf(loc->kernel_c, ";\n");
+        fprintf(loc->cuda.kernel_c, ";\n");
     }
     loc->dst = host_file;
 
     print_kernel_body(loc, host_domain, block_domain,
                       copy_in, copy_out, reorganize);
-    fprintf(loc->kernel_c, "}\n");
+    fprintf(loc->cuda.kernel_c, "}\n");
 }
 
 /* Extract the access in stmt->text starting at position identifier
@@ -1451,17 +1451,18 @@ static void extract_access(struct localizer_info *loc, Stmt *stmt,
     dom = isl_map_domain(isl_map_copy(time_loop_proj));
     pwqp = isl_pw_qpolynomial_gist(pwqp, dom);
 
-    fprintf(loc->kernel_c, "L_");
-    fwrite(stmt->text + identifier, 1, identifier_len, loc->kernel_c);
-    fprintf(loc->kernel_c, "[");
-    isl_pw_qpolynomial_print(pwqp, loc->kernel_c, ISL_FORMAT_C);
-    fprintf(loc->kernel_c, "]");
+    fprintf(loc->cuda.kernel_c, "L_");
+    fwrite(stmt->text + identifier, 1, identifier_len, loc->cuda.kernel_c);
+    fprintf(loc->cuda.kernel_c, "[");
+    isl_pw_qpolynomial_print(pwqp, loc->cuda.kernel_c, ISL_FORMAT_C);
+    fprintf(loc->cuda.kernel_c, "]");
     isl_pw_qpolynomial_free(pwqp);
 
     isl_union_pw_qpolynomial_free(rho);
 }
 
-/* Print stmt->text to loc->kernel_c, replacing each access A[i] by L_A[rho(i)].
+/* Print stmt->text to loc->cuda.kernel_c,
+ * replacing each access A[i] by L_A[rho(i)].
  */
 static void convert_accesses(struct localizer_info *loc, Stmt *stmt, char *name,
     __isl_keep isl_union_pw_qpolynomial *rho,
@@ -1486,7 +1487,7 @@ static void convert_accesses(struct localizer_info *loc, Stmt *stmt, char *name,
 
     for (i = 0; i < text_len; ++i) {
         if (identifier < 0 && isalpha(stmt->text[i])) {
-            fwrite(stmt->text + printed, 1, i - printed, loc->kernel_c);
+            fwrite(stmt->text + printed, 1, i - printed, loc->cuda.kernel_c);
             identifier = i;
             end = -1;
         } else if (identifier >= 0 && end < 0 && isalnum(stmt->text[i]))
@@ -1510,7 +1511,7 @@ static void convert_accesses(struct localizer_info *loc, Stmt *stmt, char *name,
             end = identifier = -1;
         }
     }
-    fwrite(stmt->text + printed, 1, text_len - printed, loc->kernel_c);
+    fwrite(stmt->text + printed, 1, text_len - printed, loc->cuda.kernel_c);
 
     free(buffer);
 }
@@ -1564,27 +1565,27 @@ static void print_statement_define(struct localizer_info *loc,
 
         snprintf(name, sizeof(name), "S_%d", i);
 
-        fprintf(loc->kernel_c, "#define %s(", name);
+        fprintf(loc->cuda.kernel_c, "#define %s(", name);
         for (j = 0; j < stmt->dim; ++j) {
             if (j)
-                fprintf(loc->kernel_c, ",");
-            fprintf(loc->kernel_c, "%s", stmt->iterators[j]);
+                fprintf(loc->cuda.kernel_c, ",");
+            fprintf(loc->cuda.kernel_c, "%s", stmt->iterators[j]);
         }
-        fprintf(loc->kernel_c, ") %s_(", name);
+        fprintf(loc->cuda.kernel_c, ") %s_(", name);
         for (j = 0; j < stmt->dim; ++j) {
             if (j)
-                fprintf(loc->kernel_c, ",");
-            fprintf(loc->kernel_c, "(%s)", stmt->iterators[j]);
+                fprintf(loc->cuda.kernel_c, ",");
+            fprintf(loc->cuda.kernel_c, "(%s)", stmt->iterators[j]);
         }
-        fprintf(loc->kernel_c, ")\n");
+        fprintf(loc->cuda.kernel_c, ")\n");
 
-        fprintf(loc->kernel_c, "#define %s_(", name);
+        fprintf(loc->cuda.kernel_c, "#define %s_(", name);
         for (j = 0; j < stmt->dim; ++j) {
             if (j)
-                fprintf(loc->kernel_c, ",");
-            fprintf(loc->kernel_c, "%s", stmt->iterators[j]);
+                fprintf(loc->cuda.kernel_c, ",");
+            fprintf(loc->cuda.kernel_c, "%s", stmt->iterators[j]);
         }
-        fprintf(loc->kernel_c, ") ");
+        fprintf(loc->cuda.kernel_c, ") ");
 
         dim = isl_union_map_get_dim(time_loop_proj);
         dim = isl_dim_add(dim, isl_dim_in, stmt->dim);
@@ -1596,7 +1597,7 @@ static void print_statement_define(struct localizer_info *loc,
 
         isl_map_free(proj_i);
 
-        fprintf(loc->kernel_c, "\n");
+        fprintf(loc->cuda.kernel_c, "\n");
     }
 
     isl_union_map_free(time_loop_proj);
@@ -1646,7 +1647,8 @@ static void print_copy_define(struct localizer_info *loc,
         dim = isl_dim_wrap(dim);
         lhs_i = isl_union_pw_qpolynomial_extract_pw_qpolynomial(lhs, dim);
 
-        fprintf(loc->kernel_c, "#define %s_%s(", stmt_name, loc->array[i].name);
+        fprintf(loc->cuda.kernel_c,
+		"#define %s_%s(", stmt_name, loc->array[i].name);
         for (j = 0; j < loc->host_len; ++j) {
             snprintf(name, sizeof(name), "h%d", j);
             rhs_i = isl_pw_qpolynomial_set_dim_name(rhs_i,
@@ -1668,28 +1670,28 @@ static void print_copy_define(struct localizer_info *loc,
             lhs_i = isl_pw_qpolynomial_set_dim_name(lhs_i,
                                               isl_dim_set, block_len + j, name);
             if (j)
-                fprintf(loc->kernel_c, ",");
-            fprintf(loc->kernel_c, "i%d", j);
+                fprintf(loc->cuda.kernel_c, ",");
+            fprintf(loc->cuda.kernel_c, "i%d", j);
         }
-        fprintf(loc->kernel_c, ") %s_%s_(", stmt_name, loc->array[i].name);
+        fprintf(loc->cuda.kernel_c, ") %s_%s_(", stmt_name, loc->array[i].name);
         for (j = 0; j < 1 + loc->array[i].dim; ++j) {
             if (j)
-                fprintf(loc->kernel_c, ",");
-            fprintf(loc->kernel_c, "(i%d)", j);
+                fprintf(loc->cuda.kernel_c, ",");
+            fprintf(loc->cuda.kernel_c, "(i%d)", j);
         }
-        fprintf(loc->kernel_c, ")\n");
-        fprintf(loc->kernel_c, "#define %s_%s_(",
+        fprintf(loc->cuda.kernel_c, ")\n");
+        fprintf(loc->cuda.kernel_c, "#define %s_%s_(",
                 stmt_name, loc->array[i].name);
         for (j = 0; j < 1 + loc->array[i].dim; ++j) {
             if (j)
-                fprintf(loc->kernel_c, ",");
-            fprintf(loc->kernel_c, "i%d", j);
+                fprintf(loc->cuda.kernel_c, ",");
+            fprintf(loc->cuda.kernel_c, "i%d", j);
         }
-        fprintf(loc->kernel_c, ") %s_%s[", lhs_array, loc->array[i].name);
-        isl_pw_qpolynomial_print(lhs_i, loc->kernel_c, ISL_FORMAT_C);
-        fprintf(loc->kernel_c, "] = %s_%s[", rhs_array, loc->array[i].name);
-        isl_pw_qpolynomial_print(rhs_i, loc->kernel_c, ISL_FORMAT_C);
-        fprintf(loc->kernel_c, "]\n");
+        fprintf(loc->cuda.kernel_c, ") %s_%s[", lhs_array, loc->array[i].name);
+        isl_pw_qpolynomial_print(lhs_i, loc->cuda.kernel_c, ISL_FORMAT_C);
+        fprintf(loc->cuda.kernel_c, "] = %s_%s[", rhs_array, loc->array[i].name);
+        isl_pw_qpolynomial_print(rhs_i, loc->cuda.kernel_c, ISL_FORMAT_C);
+        fprintf(loc->cuda.kernel_c, "]\n");
         isl_pw_qpolynomial_free(lhs_i);
         isl_pw_qpolynomial_free(rhs_i);
     }
@@ -1731,24 +1733,25 @@ void print_reorganize_define(struct localizer_info *loc,
 static void print_swap_buffers_define(struct localizer_info *loc)
 {
     int i;
-    fprintf(loc->kernel_c, "#define swap_buffers() do { %s *t; ", loc->type);
+    fprintf(loc->cuda.kernel_c,
+	    "#define swap_buffers() do { %s *t; ", loc->type);
     for (i = 0; i < loc->n_array; ++i) {
-        fprintf(loc->kernel_c, "t = L_%s; ", loc->array[i].name);
-        fprintf(loc->kernel_c, "L_%s = L2_%s; ",
+        fprintf(loc->cuda.kernel_c, "t = L_%s; ", loc->array[i].name);
+        fprintf(loc->cuda.kernel_c, "L_%s = L2_%s; ",
                 loc->array[i].name, loc->array[i].name);
-        fprintf(loc->kernel_c, "L2_%s = t; ", loc->array[i].name);
+        fprintf(loc->cuda.kernel_c, "L2_%s = t; ", loc->array[i].name);
     }
-    fprintf(loc->kernel_c, "} while (0)\n");
+    fprintf(loc->cuda.kernel_c, "} while (0)\n");
 }
 
 static void print_defines(struct localizer_info *loc)
 {
-    fprintf(loc->kernel_c, "#define threadIdx_x ((int)threadIdx.x)\n");
-    fprintf(loc->kernel_c, "#define threadIdx_y ((int)threadIdx.y)\n");
-    fprintf(loc->kernel_c, "#define threadIdx_z ((int)threadIdx.z)\n");
-    fprintf(loc->kernel_c, "#define sync1 __syncthreads\n");
-    fprintf(loc->kernel_c, "#define sync2 __syncthreads\n");
-    fprintf(loc->kernel_c, "#define sync3 __syncthreads\n");
+    fprintf(loc->cuda.kernel_c, "#define threadIdx_x ((int)threadIdx.x)\n");
+    fprintf(loc->cuda.kernel_c, "#define threadIdx_y ((int)threadIdx.y)\n");
+    fprintf(loc->cuda.kernel_c, "#define threadIdx_z ((int)threadIdx.z)\n");
+    fprintf(loc->cuda.kernel_c, "#define sync1 __syncthreads\n");
+    fprintf(loc->cuda.kernel_c, "#define sync2 __syncthreads\n");
+    fprintf(loc->cuda.kernel_c, "#define sync3 __syncthreads\n");
 }
 
 /* Compute the number of shared memory locations needed per array
@@ -1890,7 +1893,7 @@ void gpu_print_host_user(struct localizer_info *loc, struct clast_user_stmt *u)
 
     print_transfer_size_init(loc, size);
 
-    print_cloog_macros(loc->kernel_c);
+    print_cloog_macros(loc->cuda.kernel_c);
     print_statement_define(loc, local_sched, rho);
 
     print_copy_define(loc, copy_in, "copyin", "L", rho, "buffer", sigma);
@@ -1999,7 +2002,7 @@ static void print_host_code(struct localizer_info *loc)
     input = cloog_input_alloc(cloog_context, ud);
 
     stmt = cloog_clast_create_from_input(input, options);
-    loc->dst = loc->host_c;
+    loc->dst = loc->cuda.host_c;
     fprintf(loc->dst, "{\n");
     print_cloog_macros(loc->dst);
     for (i = 0; i < loc->n_array; ++i) {
@@ -2029,106 +2032,6 @@ static void print_host_code(struct localizer_info *loc)
 
     cloog_clast_free(stmt);
     cloog_options_free(options);
-}
-
-static char *skip_spaces(char *s)
-{
-    while (isspace(*s))
-        ++s;
-    return s;
-}
-
-static int is_begin_scop(char *line)
-{
-    line = skip_spaces(line);
-    if (*line != '#')
-        return 0;
-    line = skip_spaces(line + 1);
-    if (strncmp(line, "pragma", sizeof("pragma") - 1))
-        return 0;
-    line = skip_spaces(line + sizeof("pragma") - 1);
-    if (strncmp(line, "scop", sizeof("scop") - 1))
-        return 0;
-    return 1;
-}
-
-static int is_end_scop(char *line)
-{
-    line = skip_spaces(line);
-    if (*line != '#')
-        return 0;
-    line = skip_spaces(line + 1);
-    if (strncmp(line, "pragma", sizeof("pragma") - 1))
-        return 0;
-    line = skip_spaces(line + sizeof("pragma") - 1);
-    if (strncmp(line, "endscop", sizeof("endscop") - 1))
-        return 0;
-    return 1;
-}
-
-/* Open the "input" file for reading and open the host .cu file
- * and the kernel .hu and .cu files for writing.
- * Add the necessary includes and copy all code from the input
- * file up to the openscop pragma to the host .cu file.
- */
-static void open_files(struct localizer_info *loc, const char *input)
-{
-    char name[PATH_MAX];
-    const char *base;
-    const char *ext;
-    int len;
-    char line[1024];
-
-    base = strrchr(input, '/');
-    if (base)
-        base++;
-    else
-        base = input;
-    ext = strrchr(base, '.');
-    len = ext ? ext - base : strlen(base);
-
-    memcpy(name, base, len);
-    strcpy(name + len, "_host.cu");
-    loc->host_c = fopen(name, "w");
-
-    strcpy(name + len, "_kernel.cu");
-    loc->kernel_c = fopen(name, "w");
-
-    strcpy(name + len, "_kernel.hu");
-    loc->kernel_h = fopen(name, "w");
-    fprintf(loc->host_c, "#include \"%s\"\n", name);
-    fprintf(loc->kernel_c, "#include \"%s\"\n", name);
-    fprintf(loc->kernel_h, "#include \"cuda.h\"\n\n");
-
-    loc->input = fopen(input, "r");
-    while (fgets(line, sizeof(line), loc->input)) {
-        fprintf(loc->host_c, "%s", line);
-        if (is_begin_scop(line))
-            break;
-    }
-}
-
-/* Copy all code starting at the endscop pragma from the input
- * file to the host .cu file and close all input and output files.
- */
-static void close_files(struct localizer_info *loc)
-{
-    char line[1024];
-
-    while (fgets(line, sizeof(line), loc->input)) {
-        if (is_end_scop(line)) {
-            fprintf(loc->host_c, "%s", line);
-            break;
-        }
-    }
-    while (fgets(line, sizeof(line), loc->input)) {
-        fprintf(loc->host_c, "%s", line);
-    }
-
-    fclose(loc->input);
-    fclose(loc->kernel_c);
-    fclose(loc->kernel_h);
-    fclose(loc->host_c);
 }
 
 static void select_tile_dimensions(struct localizer_info *loc,
@@ -2317,7 +2220,7 @@ int gpuloc(PlutoProg *prog, PlutoOptions *options, const char *input)
     loc.type = options->type;
     loc.prog = prog;
 
-    open_files(&loc, input);
+    cuda_open_files(&loc.cuda, input);
     select_tile_dimensions(&loc, prog);
     loc.sched = compute_global_schedule(&loc, prog, options);
     collect_array_info(&loc);
@@ -2333,7 +2236,7 @@ int gpuloc(PlutoProg *prog, PlutoOptions *options, const char *input)
     cloog_state_free(loc.state);
     pluto_prog_free(prog);
 
-    close_files(&loc);
+    cuda_close_files(&loc.cuda);
 
     return 0;
 }
