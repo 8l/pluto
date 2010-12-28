@@ -193,3 +193,36 @@ void gpu_print_host_stmt(struct gpucode_info *info, struct clast_stmt *s)
 {
     print_stmt(info, s);
 }
+
+static __isl_give isl_set *extract_host_domain(struct clast_user_stmt *u)
+{
+    return isl_set_from_cloog_domain(cloog_domain_copy(u->domain));
+}
+
+/* Extract the set of scattering dimension values for which the given
+ * sequence of user statements is executed.
+ * In principle, this set should be the same for each of the user
+ * statements in the sequence, but we compute the union just to be safe.
+ */
+__isl_give isl_set *extract_entire_host_domain(struct clast_user_stmt *u)
+{
+    struct clast_stmt *s;
+    isl_set *host_domain = NULL;
+
+    for (s = &u->stmt; s; s = s->next) {
+        isl_set *set_i;
+
+        assert(CLAST_STMT_IS_A(s, stmt_user));
+        u = (struct clast_user_stmt *) s;
+
+        set_i = extract_host_domain(u);
+
+        if (!host_domain)
+            host_domain = set_i;
+        else
+            host_domain = isl_set_union(host_domain, set_i);
+        assert(host_domain);
+    }
+
+    return isl_set_coalesce(host_domain);
+}
