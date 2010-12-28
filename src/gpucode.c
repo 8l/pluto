@@ -1,5 +1,15 @@
 #include "gpucode.h"
 
+void print_cloog_macros(FILE *dst)
+{
+    fprintf(dst,
+        "#define floord(n,d) (((n)<0) ? -((-(n)+(d)-1)/(d)) : (n)/(d))\n");
+    fprintf(dst,
+        "#define ceild(n,d)  (((n)<0) ? -((-(n))/(d)) : ((n)+(d)-1)/(d))\n");
+    fprintf(dst, "#define max(x,y)    ((x) > (y) ? (x) : (y))\n");
+    fprintf(dst, "#define min(x,y)    ((x) < (y) ? (x) : (y))\n");
+}
+
 static void print_expr(struct clast_expr *e, FILE *dst);
 static void print_stmt(struct localizer_info *loc, struct clast_stmt *s);
 

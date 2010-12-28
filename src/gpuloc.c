@@ -14,16 +14,6 @@
 #include "program.h"
 #include "schedule.h"
 
-static void print_cloog_macros(FILE *dst)
-{
-    fprintf(dst,
-        "#define floord(n,d) (((n)<0) ? -((-(n)+(d)-1)/(d)) : (n)/(d))\n");
-    fprintf(dst,
-        "#define ceild(n,d)  (((n)<0) ? -((-(n))/(d)) : ((n)+(d)-1)/(d))\n");
-    fprintf(dst, "#define max(x,y)    ((x) > (y) ? (x) : (y))\n");
-    fprintf(dst, "#define min(x,y)    ((x) < (y) ? (x) : (y))\n");
-}
-
 /* Construct a map from a domain of dimensionality "len"
  * to a domain of dimensionality "len" + "tile_len" that tiles
  * the "tile_len" coordinates starting at "first".
