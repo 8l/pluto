@@ -1570,8 +1570,10 @@ static __isl_give isl_set *compute_block_domain(struct localizer_info *loc,
  * some characteristics and then print the body of host code
  * and the associated kernel (through a call to print_kernel).
  */
-void gpu_print_host_user(struct localizer_info *loc, struct clast_user_stmt *u)
+static void gpu_print_host_user(struct gpucode_info *code,
+	struct clast_user_stmt *u)
 {
+    struct localizer_info *loc = code->user;
     int i;
     isl_union_map *local_sched;
     isl_set *host_domain = NULL;
@@ -1583,6 +1585,8 @@ void gpu_print_host_user(struct localizer_info *loc, struct clast_user_stmt *u)
     isl_union_map *lifted_host_access;
     isl_pw_qpolynomial *size;
     isl_union_pw_qpolynomial *sigma, *rho;
+
+    loc->indent = code->indent;
 
     host_domain = extract_entire_host_domain(u);
 
@@ -1750,8 +1754,11 @@ static void print_host_code(struct localizer_info *loc)
     fprintf(loc->dst, "cudaMalloc(&dev_buffer, (");
     isl_pw_qpolynomial_fold_print(loc->max_transfer_size, loc->dst, ISL_FORMAT_C);
     fprintf(loc->dst, ") * sizeof(%s));\n", loc->type);
-    loc->indent = 0;
-    gpu_print_host_stmt(loc, stmt);
+    loc->code.indent = 0;
+    loc->code.dst = loc->dst;
+    loc->code.print_user_stmt = &gpu_print_host_user;
+    loc->code.user = loc;
+    gpu_print_host_stmt(&loc->code, stmt);
     fprintf(loc->dst, "cudaFree(dev_buffer);\n");
     fprintf(loc->dst, "}\n");
 

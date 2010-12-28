@@ -11,7 +11,7 @@ void print_cloog_macros(FILE *dst)
 }
 
 static void print_expr(struct clast_expr *e, FILE *dst);
-static void print_stmt(struct localizer_info *loc, struct clast_stmt *s);
+static void print_stmt(struct gpucode_info *info, struct clast_stmt *s);
 
 void print_indent(FILE *dst, int indent)
 {
@@ -124,72 +124,72 @@ static void print_ass(struct clast_assignment *a, FILE *dst, int indent)
     fprintf(dst, ";\n");
 }
 
-static void print_guard(struct localizer_info *loc, struct clast_guard *g)
+static void print_guard(struct gpucode_info *info, struct clast_guard *g)
 {
     int i;
     int n = g->n;
 
-    print_indent(loc->dst, loc->indent);
-    fprintf(loc->dst, "if (");
+    print_indent(info->dst, info->indent);
+    fprintf(info->dst, "if (");
     for (i = 0; i < n; ++i) {
         if (i > 0)
-            fprintf(loc->dst," && ");
-        fprintf(loc->dst,"(");
-        print_expr(g->eq[i].LHS, loc->dst);
+            fprintf(info->dst," && ");
+        fprintf(info->dst,"(");
+        print_expr(g->eq[i].LHS, info->dst);
         if (g->eq[i].sign == 0)
-            fprintf(loc->dst," == ");
+            fprintf(info->dst," == ");
         else if (g->eq[i].sign > 0)
-            fprintf(loc->dst," >= ");
+            fprintf(info->dst," >= ");
         else
-            fprintf(loc->dst," <= ");
-        print_expr(g->eq[i].RHS, loc->dst);
-        fprintf(loc->dst,")");
+            fprintf(info->dst," <= ");
+        print_expr(g->eq[i].RHS, info->dst);
+        fprintf(info->dst,")");
     }
-    fprintf(loc->dst, ") {\n");
-    loc->indent += 4;
-    print_stmt(loc, g->then);
-    loc->indent -= 4;
-    print_indent(loc->dst, loc->indent);
-    fprintf(loc->dst, "}\n");
+    fprintf(info->dst, ") {\n");
+    info->indent += 4;
+    print_stmt(info, g->then);
+    info->indent -= 4;
+    print_indent(info->dst, info->indent);
+    fprintf(info->dst, "}\n");
 }
 
-static void print_for(struct localizer_info *loc, struct clast_for *f)
+static void print_for(struct gpucode_info *info, struct clast_for *f)
 {
     assert(f->LB && f->UB);
-    print_indent(loc->dst, loc->indent);
-    fprintf(loc->dst, "for (%s = ", f->iterator);
-    print_expr(f->LB, loc->dst);
-    fprintf(loc->dst, "; %s <= ", f->iterator);
-    print_expr(f->UB, loc->dst);
-    fprintf(loc->dst, "; ++%s) {\n", f->iterator);
-    loc->indent += 4;
-    print_stmt(loc, f->body);
-    loc->indent -= 4;
-    print_indent(loc->dst, loc->indent);
-    fprintf(loc->dst, "}\n");
+    print_indent(info->dst, info->indent);
+    fprintf(info->dst, "for (%s = ", f->iterator);
+    print_expr(f->LB, info->dst);
+    fprintf(info->dst, "; %s <= ", f->iterator);
+    print_expr(f->UB, info->dst);
+    fprintf(info->dst, "; ++%s) {\n", f->iterator);
+    info->indent += 4;
+    print_stmt(info, f->body);
+    info->indent -= 4;
+    print_indent(info->dst, info->indent);
+    fprintf(info->dst, "}\n");
 }
 
-static void print_stmt(struct localizer_info *loc, struct clast_stmt *s)
+static void print_stmt(struct gpucode_info *info, struct clast_stmt *s)
 {
     for ( ; s; s = s->next) {
         if (CLAST_STMT_IS_A(s, stmt_root))
             continue;
         if (CLAST_STMT_IS_A(s, stmt_ass)) {
-            print_ass((struct clast_assignment *) s, loc->dst, loc->indent);
+            print_ass((struct clast_assignment *) s, info->dst, info->indent);
         } else if (CLAST_STMT_IS_A(s, stmt_user)) {
-            gpu_print_host_user(loc, (struct clast_user_stmt *) s);
+            info->print_user_stmt(info, (struct clast_user_stmt *) s);
             return;
         } else if (CLAST_STMT_IS_A(s, stmt_for)) {
-            print_for(loc, (struct clast_for *) s);
+            print_for(info, (struct clast_for *) s);
         } else if (CLAST_STMT_IS_A(s, stmt_guard)) {
-            print_guard(loc, (struct clast_guard *) s);
+            print_guard(info, (struct clast_guard *) s);
         } else {
             assert(0);
         }
     }
 }
 
-void gpu_print_host_stmt(struct localizer_info *loc, struct clast_stmt *s)
+void gpu_print_host_stmt(struct gpucode_info *info, struct clast_stmt *s)
 {
-    print_stmt(loc, s);
+    print_stmt(info, s);
 }

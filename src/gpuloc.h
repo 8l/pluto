@@ -6,6 +6,7 @@
 
 #include "pluto.h"
 #include "cuda_common.h"
+#include "gpucode.h"
 
 struct array_info {
     /* Name of the array. */
@@ -20,6 +21,7 @@ struct array_info {
 
 struct localizer_info {
     struct cuda_info cuda;
+    struct gpucode_info code;
 
     /* Number of rows in the original schedule computed by Pluto. */
     int len;
@@ -62,8 +64,5 @@ struct localizer_info {
 };
 
 int gpuloc(PlutoProg *prog, PlutoOptions *options, const char *input);
-
-void gpu_print_host_user(struct localizer_info *loc,
-    struct clast_user_stmt *u);
 
 #endif
