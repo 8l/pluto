@@ -27,6 +27,8 @@ pluto_SOURCES = \
 	pluto.h \
 	program.c \
 	program.h \
+	schedule.c \
+	schedule.h \
 	tile.c
 pluto_CPPFLAGS = -DSCOPLIB_INT_T_IS_LONGLONG -DCLOOG_INT_GMP \
    -I../piplib-1.4.0/include \
