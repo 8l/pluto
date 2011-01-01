@@ -154,6 +154,7 @@ AC_CONFIG_COMMANDS_POST([
         ac_configure_args="$ac_configure_args \
                 --enable-static --disable-shared \
                 --without-piplib --without-zsolve \
+                --with-cloog-builddir=$SOURCE_DIR/cloog-isl \
                 --with-isl-builddir=$SOURCE_DIR/isl"
 ])
 
