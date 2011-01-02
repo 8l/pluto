@@ -174,7 +174,14 @@ static void print_for(struct gpucode_info *info, struct clast_for *f)
     print_expr(f->LB, info->dst);
     fprintf(info->dst, "; %s <= ", f->iterator);
     print_expr(f->UB, info->dst);
-    fprintf(info->dst, "; ++%s) {\n", f->iterator);
+    fprintf(info->dst, "; %s", f->iterator);
+    if (cloog_int_is_one(f->stride))
+	fprintf(info->dst, "++");
+    else {
+	fprintf(info->dst, " += ");
+	cloog_int_print(info->dst, f->stride);
+    }
+    fprintf(info->dst, ") {\n");
     info->indent += 4;
     print_stmt(info, f->body);
     info->indent -= 4;
