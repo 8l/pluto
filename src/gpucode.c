@@ -25,9 +25,13 @@ static void print_name(struct clast_name *n, FILE *dst)
 
 static void print_term(struct clast_term *t, FILE *dst)
 {
-    cloog_int_print(dst, t->val);
-    if (t->var) {
-        fprintf(dst, "*");
+    if (!t->var) {
+	cloog_int_print(dst, t->val);
+    } else {
+	if (!cloog_int_is_one(t->val)) {
+		cloog_int_print(dst, t->val);
+		fprintf(dst, "*");
+	}
         if (t->var->type == clast_expr_red)
             fprintf(dst, "(");
         print_expr(t->var, dst);
@@ -90,8 +94,17 @@ static void print_red(struct clast_reduction *r, FILE *dst)
         fprintf(dst, "%s", s1);
     print_expr(r->elts[0], dst);
     for (i = 1; i < r->n; ++i) {
-        fprintf(dst, "%s", s2);
-        print_expr(r->elts[i], dst);
+	if (r->type == clast_red_sum && r->elts[i]->type == clast_expr_term &&
+		cloog_int_is_neg(((struct clast_term *) r->elts[i])->val)) {
+	    struct clast_term *t = (struct clast_term *) r->elts[i];
+	    cloog_int_neg(t->val, t->val);
+	    fprintf(dst, " - ", s2);
+	    print_expr(r->elts[i], dst);
+	    cloog_int_neg(t->val, t->val);
+	} else {
+	    fprintf(dst, "%s", s2);
+	    print_expr(r->elts[i], dst);
+	}
         fprintf(dst, "%s", s3);
     }
 }
