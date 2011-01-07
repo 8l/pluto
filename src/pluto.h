@@ -1,5 +1,5 @@
 /*
- * PLuTo: An automatic parallelizer and locality optimizer
+ * PLUTO: An automatic parallelizer and locality optimizer
  * 
  * Copyright (C) 2007 Uday Kumar Bondhugula
  *
@@ -162,6 +162,10 @@ struct plutoOptions{
 
     int gpuloc;
 
+    int cuda;
+    int cuda_scale_tile_loops;
+    int cuda_wrap;
+
     char *type;
 
     int tile_size;
@@ -184,11 +188,10 @@ struct statement{
     /* Statement text */
     char *text;
 
-    /* Does this dimension appear in the original statement's domain? 
-     * We have this due to LooPo's uniform structure of nvar 
-     * dimensions for every statement's domain - but only some of them 
-     * appear - the cleanup is done later  */
-    bool is_outer_loop[MAX_VARS];
+    /* Does this dimension appear in the statement's original domain? 
+     * dummy dimensions added (sinking) will have is_orig_loop as false
+     */
+    bool is_orig_loop[MAX_VARS];
 
     /* Actual dimensionality of the statement's domain */
     int dim;

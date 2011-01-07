@@ -12,6 +12,7 @@ pluto_SOURCES = \
 	constraints.c \
 	math_support.c \
 	ddg.c \
+	transforms.c \
 	pluto.c \
 	post_transform.c \
 	framework.c \
@@ -21,6 +22,8 @@ pluto_SOURCES = \
 	gpuloc.h \
 	cuda_common.h \
 	cuda_common.c \
+	cuda.c \
+	cuda.h \
 	main.c \
 	constraints.h \
 	math_support.h \

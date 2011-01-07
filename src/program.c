@@ -440,7 +440,7 @@ static Stmt *stmts_read(isl_ctx *ctx, scoplib_scop_p scop,
         }
 
         for (j=0; j<stmt->dim; j++)  {
-            stmt->is_outer_loop[j] = true;
+            stmt->is_orig_loop[j] = true;
         }
 
         stmt->trans = pluto_matrix_alloc(MAX_TRANS_ROWS, 

@@ -27,6 +27,8 @@
 #include "config.h"
 #endif
 
+#include <isl/options.h>
+
 #include "pluto.h"
 
 #include "clan/clan.h"
@@ -37,6 +39,7 @@
 #include "ddg.h"
 #include "program.h"
 #include "gpuloc.h"
+#include "cuda.h"
 
 PlutoOptions *options;
 
@@ -96,6 +99,10 @@ ISL_ARG_CHOICE(PlutoOptions, fuse, 0, "fuse", fuse_choice, SMART_FUSE,
 ISL_ARG_BOOL(PlutoOptions, debug, 0, "debug", 0, "Verbose output")
 ISL_ARG_BOOL(PlutoOptions, moredebug, 0, "moredebug", 0, "More verbose output")
 ISL_ARG_BOOL(PlutoOptions, gpuloc, 0, "gpuloc", 0, "Localize for GPU")
+ISL_ARG_BOOL(PlutoOptions, cuda, 0, "cuda", 0, "Generate CUDA code")
+ISL_ARG_BOOL(PlutoOptions, cuda_scale_tile_loops, 0,
+	"cuda-scale-tile-loops", 1, NULL)
+ISL_ARG_BOOL(PlutoOptions, cuda_wrap, 0, "cuda-wrap", 1, NULL)
 ISL_ARG_STR(PlutoOptions, type, 't', "type", "type", "float",
     "Element type of arrays")
 ISL_ARG_INT(PlutoOptions, tile_size, 'S', "tile-size", "size",
@@ -246,6 +253,12 @@ int main(int argc, char *argv[])
         }
 
         print_hyperplane_properties(prog->hProps, prog->num_hyperplanes);
+    }
+
+    if (options->cuda) {
+        int r = cuda(prog, options, arg->srcFileName);
+        arg_free(arg);
+        return r;
     }
 
     if (options->gpuloc) {
