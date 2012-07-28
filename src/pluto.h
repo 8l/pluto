@@ -234,9 +234,8 @@ struct plutoProg{
 };
 typedef struct plutoProg PlutoProg;
 
-
 /* Globally visible, easily accessible data */
-/* It's declared in main.c (for pluto binary) and in libpluto.c for 
+/* It's declared in main.c (for pluto binary) and in libpluto.c for
  * the library */
 extern PlutoOptions *options;
 
