@@ -1385,6 +1385,8 @@ PlutoOptions *pluto_options_alloc()
 
     options->out_file = NULL;
 
+    options->sica = 0;
+
     return options;
 }
 

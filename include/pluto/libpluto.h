@@ -117,6 +117,9 @@ struct plutoOptions{
     int islsolve;
     /* Output file name supplied from -o */
     char *out_file;
+
+    /* apply SICA extension */
+    int sica;
 };
 typedef struct plutoOptions PlutoOptions;
 

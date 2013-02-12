@@ -72,6 +72,8 @@ void usage_message(void)
     fprintf(stdout, "\n   Debugging\n");
     fprintf(stdout, "       --debug        Verbose output\n");
     fprintf(stdout, "       --moredebug    More verbose output\n");
+    fprintf(stdout, "\n   PluTo-SICA\n");
+    fprintf(stdout, "       --sica         Apply SICA extension for SIMD- and cache-specific tiling\n");
     fprintf(stdout, "\nTo report bugs, please send an email to <pluto-development@googlegroups.com>\n\n");
 }
 
@@ -137,6 +139,7 @@ int main(int argc, char *argv[])
         {"isldepcompact", no_argument, &options->isldepcompact, 1},
         {"readscoplib", no_argument, &options->readscoplib, 1},
         {"islsolve", no_argument, &options->islsolve, 1},
+        {"sica", no_argument, &options->sica, 1},
         {0, 0, 0, 0}
     };
 
@@ -285,6 +288,24 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
             fprintf(stdout, "[Pluto] Warning: pre-vectorization does not fit (--tile is off)\n");
         }
         options->prevector = 0;
+    }
+
+    /* Check for SICA extension and make other options consitent */
+    if (options->sica)    {
+        //--tile is necessary for the SICA extension
+        if(!options->tile)    {
+            options->sica=0;
+            fprintf(stdout, "[SICA] Warning: sica does not fit (--tile is off)\n");
+        }
+        else    {
+        //apply the SICA extension
+            fprintf(stdout, "[SICA] Applying SICA extension to the code\n");
+            if (!options->prevector)   {
+                //automatically enable prevectorization when --sica is on
+                fprintf(stdout, "[SICA] Warning: pre-vectorization in enabled automatically to support SICA\n");
+                options->prevector=1;
+            }
+        }
     }
 
     if (!options->silent)   {
