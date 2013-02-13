@@ -320,7 +320,6 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
                 print_addl2cache_hierarchie(l2cachesize);
             }
             printf("\n");
-
         }
     }
 
