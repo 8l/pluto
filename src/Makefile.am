@@ -15,9 +15,17 @@ ISL_INCLUDE += -I$(top_srcdir)/isl/include
 ISL_LIBADD += $(top_srcdir)/isl/libisl.la
 endif
 
+SICA_INCLUDE = -I$(top_srcdir)/sica-0.9.0/include
+SICA_SOURCES_DIR = $(top_srcdir)/sica-0.9.0/src
+
+SICA_CACHE_SOURCES = $(SICA_SOURCES_DIR)/amdspeccache.c $(SICA_SOURCES_DIR)/compilerinfo.c $(SICA_SOURCES_DIR)/cpuinfo.c $(SICA_SOURCES_DIR)/hwanalysis.c $(SICA_SOURCES_DIR)/intelspeccache.c $(SICA_SOURCES_DIR)/mathhelp.c $(SICA_SOURCES_DIR)/printconvert.c
+
+SICA_SOURCES = $(SICA_CACHE_SOURCES)
+SICA_SOURCES += 
+
 bin_PROGRAMS = pluto
 
-pluto_SOURCES = constraints.c math_support.c ddg.c transforms.c pluto.c post_transform.c framework.c pluto_codegen_if.c polyloop.c ast_transform.c main.c constraints.h math_support.h pluto.h program.c program.h tile.c unit_tests.c
+pluto_SOURCES = constraints.c math_support.c ddg.c transforms.c pluto.c post_transform.c framework.c pluto_codegen_if.c polyloop.c ast_transform.c main.c constraints.h math_support.h pluto.h program.c program.h tile.c unit_tests.c $(SICA_SOURCES)
 pluto_CPPFLAGS = -O3 -funroll-loops -fopenmp \
    -DSCOPLIB_INT_T_IS_LONGLONG -DCLOOG_INT_GMP \
    -I../include \
@@ -26,6 +34,7 @@ pluto_CPPFLAGS = -O3 -funroll-loops -fopenmp \
    -I../clan-0.6.0/scoplib/scoplib-0.2.0/include \
    -I../candl-0.4.0/include \
    $(ISL_INCLUDE) \
+   $(SICA_INCLUDE) \
    -I../cloog-isl/include
 pluto_LDFLAGS = -static -fopenmp
 pluto_LDADD = ../candl-0.4.0/source/libcandl.la \
@@ -45,7 +54,8 @@ libpluto_la_CPPFLAGS = -O3 -funroll-loops -fopenmp \
    -I../clan-0.6.0/include \
    -I../clan-0.6.0/scoplib/scoplib-0.2.0/include \
    -I../candl-0.4.0/include \
-   $(ISL_INCLUDE)
+   $(ISL_INCLUDE) \
+   $(SICA_INCLUDE)
 
 libpluto_la_LIBADD = ../candl-0.4.0/source/libcandl.la \
    ../clan-0.6.0/source/libclan.la \
