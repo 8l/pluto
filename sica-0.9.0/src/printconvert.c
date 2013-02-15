@@ -6,6 +6,8 @@
  */
 
 #include <string.h>
+#include <stdio.h>
+
 #include "hwanalysis.h"
 
 void print_all_cache_information()
