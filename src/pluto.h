@@ -296,9 +296,20 @@ void pluto_constraints_list_add(PlutoConstraintsList *list,const PlutoConstraint
 void pluto_constraints_list_replace(PlutoConstraintsList *list, PlutoConstraints *cst, 
     PlutoConstraints *iterations);
 
+/* [SICA] structure for SICA necessary data */
+struct sica_data{
+    int vectorizedloop; //vectorized loop t(vectorizedloop+1) in this band
+    int vectorizedlooprow; //row (vectorizedlooprow+1) in tile.sizes for vectorized loop
+};
+typedef struct sica_data SICAData;
+
 typedef struct band{
     Ploop *loop;
     int width;
+
+    /* [SICA] struct for SICA tiling data */
+    SICAData *sicadata;
+
     /* Not used yet */
     struct band **children;
 } Band;
