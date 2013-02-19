@@ -155,12 +155,6 @@ int pluto_pre_vectorize_band(Band *band, int num_tiling_levels, PlutoProg *prog)
     }
 
     if (l < num) {
-        /* [SICA] Store information on loop that is vectorized in this band*/
-        band->sicadata = malloc(sizeof(SICAData));
-        band->sicadata->vectorizedloop=loops[l]->depth;
-        band->sicadata->vectorizedlooprow=l;
-        IF_DEBUG(printf("[SICA] Original loop that is vectorized: t%i, row in tile_sizes: %i\n",band->sicadata->vectorizedloop+1,band->sicadata->vectorizedlooprow+1););
-
         pluto_make_innermost(loops[l], prog);
         IF_DEBUG(printf("[Pluto] Loop to be vectorized: "););
         IF_DEBUG(pluto_loop_print(loops[l]););
