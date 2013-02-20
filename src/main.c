@@ -36,6 +36,8 @@
 #include "version.h"
 
 #include "hwanalysis.h"
+#include "sica_post_transform.h"
+#include "sica_tile.h"
 
 #include "clan/clan.h"
 #include "candl/candl.h"
@@ -343,10 +345,14 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
         pluto_transformations_pretty_print(prog);
         pluto_print_hyperplane_properties(prog);
     }
-
-    if (options->tile)   {
+    
+    /* [SICA] Apply different tiling options */
+    if (options->sica)    { /* apply [SICA] tiling */
+        printf("[SICA] Apply SICA tiling\n\n");
+        sica_tile(prog);
+    }else if (options->tile) { /* apply original tiling */
         pluto_tile(prog);
-    }else{
+    }else{ /* apply no tiling */
         if (options->intratileopt) {
             int retval = pluto_intra_tile_optimize(prog, 0); 
             if (retval) {
