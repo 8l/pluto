@@ -84,6 +84,10 @@ void sica_tile_band(PlutoProg *prog, Band *band, int *tile_sizes)
                 stmt->domain->val[stmt->domain->nrows-1][stmt->domain->ncols-1] = 
                     -stmt->trans->val[(depth-firstD)+1+depth][stmt->dim+prog->npar] 
                     +tile_sizes[depth-firstD]-1;
+                
+                /* [SICA] store the upper bound offset for the retiling (as this value can be changed in the intermediate steps) */
+                /* [SICA] ToDo: Check wheather it is OK not to distinguish between L1 and L2 tiling but just taking the last (overwritten) value */ 
+                band->sicadata->upperboundoffset[s]=-stmt->trans->val[(depth-firstD)+1+depth][stmt->dim+prog->npar];
 
                 PlutoConstraints *ub = pluto_constraints_select_row(stmt->domain,
                         stmt->domain->nrows-1);
@@ -148,7 +152,7 @@ void sica_tile_band(PlutoProg *prog, Band *band, int *tile_sizes)
  *  */
 void sica_tile(PlutoProg *prog)
 {
-    int nbands, i;
+    int nbands, i, s;
     Band **bands;
     bands = pluto_get_outermost_permutable_bands(prog, &nbands);
     IF_DEBUG(printf("Outermost tilable bands\n"););
@@ -162,6 +166,10 @@ void sica_tile(PlutoProg *prog)
         bands[i]->sicadata->vecrow=-1;
         bands[i]->sicadata->sical1size=-1;
         bands[i]->sicadata->sical2size=-1;
+        bands[i]->sicadata->upperboundoffset=(int*)malloc((bands[i]->loop->nstmts)*sizeof(int));
+        for(s=0;s<bands[i]->loop->nstmts;s++)    {
+        	bands[i]->sicadata->upperboundoffset[s]=-1;
+        }
     }
     
 

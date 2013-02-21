@@ -57,7 +57,8 @@ void sica_retile_band(PlutoProg *prog, Band *band, int *tile_sizes, int offset)
                 stmt->domain->val[(stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset][depth-firstD+col_offset] = tile_sizes[widthD-(depth-firstD)];
                 /* Y */
                 /* ToDo: is it correct that in stmt->trans->val there is NO OFFSET?!? LIKE THAT IT WORKS -> figure out the relation between trans element and domeain value */
-                stmt->domain->val[(stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset][stmt->domain->ncols-1] = -stmt->trans->val[(depth-firstD)+1+depth][stmt->dim+prog->npar]+tile_sizes[widthD-(depth-firstD)]-1;
+                stmt->domain->val[(stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset][stmt->domain->ncols-1] = band->sicadata->upperboundoffset[s]+tile_sizes[widthD-(depth-firstD)]-1;
+                //IF_DEBUG(printf("[SICA] Statement %i -> Backuped upper bound offset: %i, current offset would be %i\n", s, band->sicadata->upperboundoffset[s], -stmt->trans->val[(depth-firstD)+1+depth][stmt->dim+prog->npar]););
 
                 /* lower bound of the tile-loop  X * tx >= 0 (the relating outer tile-loop is stored in column depth+vecrow for l1 and depth+vecrow for l2) */
                 /* X */
