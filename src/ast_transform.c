@@ -110,6 +110,9 @@ void pluto_mark_vector(struct clast_stmt *root, const PlutoProg *prog,
             /* Sometimes loops may disappear (1) tile size larger than trip count
              * 2) it's a scalar dimension but can't be determined from the
              * trans matrix */
+        	/* [SICA] in the SICA approach, parallel but not vectorizable loops
+        	 * are not tiled and so those loops are not recognized any more
+        	 * */
             printf("Warning: parallel poly loop not found in AST\n");
             continue;
         }
