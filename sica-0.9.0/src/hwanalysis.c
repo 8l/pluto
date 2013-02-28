@@ -1,5 +1,5 @@
 /*
- * checkhardwarecache.c
+ * hwanalysis.c
  *
  *  Created on: 31.01.2013
  *      Author: dfeld

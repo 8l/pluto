@@ -8,6 +8,8 @@
 #ifndef SICA_H
 #define SICA_H
 
+#define SICA_STRING_SIZE 32
+
 #include "pluto.h"
 
 /* [SICA] structure for SICA necessary data */
@@ -20,8 +22,11 @@ struct sica_data{
     int sical1size; //l1 tile size for vectorized loop
     int sical2size; //l2 tile size for outermost loop
     
-    int* upperboundoffset; //offsetarray for each statement for retiling upper bound (this depends on transformation matrix), 
+    int *upperboundoffset; //offsetarray for each statement for retiling upper bound (this depends on transformation matrix),
                           //as this is modified in the process, this backup is needed
+
+    char **id2arrayname; //array that stores the names of all arrays to specify a unique id for each
+    int nb_arrays;
 };
 typedef struct sica_data SICAData;
 

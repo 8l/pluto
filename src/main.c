@@ -349,7 +349,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
     /* [SICA] Apply different tiling options */
     if (options->sica)    { /* apply [SICA] tiling */
         printf("[SICA] Apply SICA tiling\n\n");
-        sica_tile(prog);
+        sica_tile(prog, scop);
     }else if (options->tile) { /* apply original tiling */
         pluto_tile(prog);
     }else{ /* apply no tiling */
