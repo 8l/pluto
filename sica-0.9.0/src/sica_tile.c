@@ -18,6 +18,8 @@
 #include "sica_tile.h"
 #include "sica_retile.h"
 
+#include "cache_math_func.h"
+
 /* Manipulates statement domain and transformation to tile scattering 
  * dimensions from firstD to lastD */
 void sica_tile_band(PlutoProg *prog, Band *band, int *tile_sizes)
@@ -154,7 +156,7 @@ void sica_tile_band(PlutoProg *prog, Band *band, int *tile_sizes)
  *  */
 void sica_tile(PlutoProg *prog, scoplib_scop_p scop)
 {
-    int nbands, i, s;
+    int nbands, i, a, s, r, w, x, y, t;
     Band **bands;
     bands = pluto_get_outermost_permutable_bands(prog, &nbands);
     IF_DEBUG(printf("Outermost tilable bands\n"););
@@ -214,6 +216,85 @@ void sica_tile(PlutoProg *prog, scoplib_scop_p scop)
     /* Detect properties again after tiling */
     pluto_detect_transformation_properties(prog);
 
+	// [SICA] START extract the transformation matrices before prevectorize
+    for (i=0; i<nbands; i++) {
+      Band* act_band=bands[i];
+      for(s=0; s<act_band->loop->nstmts;s++)    {
+    	//calculatin the column offset -> TODO: SCALAR DIMENSIONS ARE MISSING, TAKE THE TRANSFORMATION FROM PROG???
+        int firstD = act_band->loop->depth;
+        int lastD = act_band->loop->depth+act_band->width-1;
+        int widthD=lastD-firstD;
+
+        int coloffset=0;
+        act_band->sicadata->transwidth=widthD+1;
+
+        if(options->tile)    {
+        	coloffset=widthD+1;
+        }
+        if(options->l2tile)    {
+        	coloffset=2*(widthD+1);
+        }
+
+        int rowoffset=coloffset;
+
+    	printf("\t column offset: %i\n", coloffset);
+    	printf("\t row offset: %i\n", rowoffset);
+    	printf("\n");
+
+    	////malloc the sicadata->trans matrices and fill it
+    	act_band->sicadata->trans=(int**)malloc(act_band->sicadata->transwidth*sizeof(int*));
+    	for(x=0; x < act_band->sicadata->transwidth; x++)    {
+    		act_band->sicadata->trans[x]=(int*)malloc(act_band->sicadata->transwidth*sizeof(int));
+    	}
+
+    	act_band->sicadata->trans_inverted=(int**)malloc(act_band->sicadata->transwidth*sizeof(int*));
+    	for(x=0; x < act_band->sicadata->transwidth; x++)    {
+    		act_band->sicadata->trans_inverted[x]=(int*)malloc(act_band->sicadata->transwidth*sizeof(int));
+    	}
+
+    	//fill it
+    	int addrowoffset=0;
+    	for(y=0; y < act_band->sicadata->transwidth; y++)    {
+    		/* if the row is a scalar dimension or a zero row, skip it (so if it looks like this (0,0,...,0,?))
+    		 * so if the sum of all elements but the last is 0
+    		 */
+    		int sum = 0;
+    		for(x=0;x<act_band->loop->stmts[s]->trans->ncols-1;x++)    {
+    			sum += act_band->loop->stmts[s]->trans->val[y][x];
+    		}
+    		if(sum==0)    {
+    			addrowoffset++;
+    			printf("[SICA] Skipping row %i\n",y);
+    		}
+	   	    for(x=0; x < act_band->sicadata->transwidth; x++)    {
+	    		act_band->sicadata->trans[y][x]=act_band->loop->stmts[s]->trans->val[y+rowoffset+addrowoffset][x+coloffset];
+	   	    }
+   	    }
+
+    	// [SICA] invert it
+    	// [SICA] temp -> linearize the array
+    	float* trans_lin = (float*)malloc(act_band->sicadata->transwidth*act_band->sicadata->transwidth*sizeof(float));
+
+    	for(y=0; y < act_band->sicadata->transwidth; y++)    {
+	   	    for(x=0; x < act_band->sicadata->transwidth; x++)    {
+	   	    	trans_lin[y*act_band->sicadata->transwidth+x]=(float)act_band->sicadata->trans[y][x];
+	   	    }
+    	}
+
+    	float* trans_inverted_lin = (float*)malloc(act_band->sicadata->transwidth*act_band->sicadata->transwidth*sizeof(float));
+
+    	cache_inverse(trans_lin, trans_inverted_lin, act_band->sicadata->transwidth);
+
+    	for(y=0; y < act_band->sicadata->transwidth; y++)    {
+	   	    for(x=0; x < act_band->sicadata->transwidth; x++)    {
+	   	    	act_band->sicadata->trans_inverted[y][x]=(int)trans_inverted_lin[y*act_band->sicadata->transwidth+x];
+	   	    }
+    	}
+      }
+    }
+	// [SICA] STOP extract the transformation matrices before prevectorize
+
+
     if (options->prevector) {
         int retval = 0;
         for (i=0; i<nbands; i++) {
@@ -241,7 +322,6 @@ void sica_tile(PlutoProg *prog, scoplib_scop_p scop)
     
     /* [SICA] calculate the band specific tile quantities */
     for (i=0; i<nbands; i++) {
-	    int a,s,r,w,x,y,t;
 
     	Band* act_band=bands[i];
 
@@ -300,8 +380,6 @@ void sica_tile(PlutoProg *prog, scoplib_scop_p scop)
 				}
 		    }
 
-
-
 		    /* [SICA] writes */
 		    for(w=0;w<act_band->loop->stmts[s]->nwrites;w++)
 		    {
@@ -332,14 +410,37 @@ void sica_tile(PlutoProg *prog, scoplib_scop_p scop)
 				printf("[SICA] Array-ID: %i, name: %s\n", a, act_band->sicadata->id2arrayname[a]);
         }
 
-
+		//TODO: IMPLEMENT FUNCTION THAT GETS THE ARRAY NAME AND RETURNS THE ID
 
 	    printf("\tbands[%i], width=%i\n", i, act_band->width);
 	    printf("\tbands[%i], nstmts=%i\n", i, act_band->loop->nstmts);
 
 	    for(s=0; s<act_band->loop->nstmts;s++)
 	    {
-		    printf("\t\t stmt=%i: nreads=%i\n", s, act_band->loop->stmts[s]->nreads);
+	    	// [SICA] print the transformation matrix
+	    	printf("T(S%i):\n",act_band->loop->stmts[s]->id);
+			pluto_matrix_print(stdout, act_band->loop->stmts[s]->trans);
+	    	printf("\t\t stmt=%i: nreads=%i\n", s, act_band->loop->stmts[s]->nreads);
+
+	    	// [SICA] Print the extracted transformation matrix
+	    	printf("[SICA] Transformation matrix:\n");
+	    	for(y=0; y < act_band->sicadata->transwidth; y++)    {
+			    for(x=0; x < act_band->sicadata->transwidth; x++)    {
+			    	printf("%i ",act_band->sicadata->trans[y][x]);
+		 	   }
+			    printf("\n");
+	    	}
+
+	    	// [SICA] Print the inverted transformation matrix
+	    	printf("[SICA] Inverted Transformation matrix:\n");
+	    	for(y=0; y < act_band->sicadata->transwidth; y++)    {
+		   	    for(x=0; x < act_band->sicadata->transwidth; x++)    {
+		   	    	printf("%i ",act_band->sicadata->trans_inverted[y][x]);
+		   	    }
+		   	    printf("\n");
+	    	}
+
+
 		    for(r=0;r<act_band->loop->stmts[s]->nreads;r++)
 		    {
 		    	printf("\t\t\tMATRIX:\n");
@@ -356,13 +457,6 @@ void sica_tile(PlutoProg *prog, scoplib_scop_p scop)
 		    	printf("\t\t\t read=%i, type=%s\n", r, act_band->loop->stmts[s]->reads[r]->symbol->data_type);
 		    	printf("\n");
 		    	pluto_matrix_print(stdout, act_band->loop->stmts[s]->reads[r]->mat);
-
-		    	//calculatin the column offset
-		        int firstD = act_band->loop->depth;
-		        int lastD = act_band->loop->depth+act_band->width-1;
-		        int widthD=lastD-firstD;
-		    	printf("\t\t\t column offset: %i\n", widthD+1);
-		    	printf("\n");
 		    }
 
 		    printf("\t\t stmt=%i: nwrites=%i\n", s, act_band->loop->stmts[s]->nwrites);

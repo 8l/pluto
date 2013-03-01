@@ -14,19 +14,23 @@
 
 /* [SICA] structure for SICA necessary data */
 struct sica_data{
-	int isvec;
+	int isvec;				//is the band vectorizable?
 	
-    int vecloop; //vectorized loop t%i
-    int vecrow; //row in tile_sizes related to vectorized loop t%i
+    int vecloop; 			//vectorized loop t%i
+    int vecrow; 			//row in tile_sizes related to vectorized loop t%i
     
-    int sical1size; //l1 tile size for vectorized loop
-    int sical2size; //l2 tile size for outermost loop
+    int sical1size; 		//l1 tile size for vectorized loop
+    int sical2size; 		//l2 tile size for outermost loop
     
-    int *upperboundoffset; //offsetarray for each statement for retiling upper bound (this depends on transformation matrix),
-                          //as this is modified in the process, this backup is needed
+    int *upperboundoffset; 	//offsetarray for each statement for retiling upper bound (this depends on transformation matrix),
+							//as this is modified in the process, this backup is needed
 
-    char **id2arrayname; //array that stores the names of all arrays to specify a unique id for each
+    char **id2arrayname; 	//array that stores the names of all arrays to specify a unique id for each
     int nb_arrays;
+
+    int **trans;			//pointer to transformation matrices for each statement in this band, trans[s]->mat[][]
+    int **trans_inverted;	//inverted transformation matrix
+    int transwidth;			//width of the quadratic transformation matrix TODO: is it always quadratic
 };
 typedef struct sica_data SICAData;
 
