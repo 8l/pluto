@@ -498,7 +498,7 @@ void sica_tile(PlutoProg *prog, scoplib_scop_p scop)
     		act_band->sicadata->sical2size=4;  // [SICA] HERE A FUNCTION SHOULD BE CALLED THAT CALCULATES THE GLOBAL SIZE
 
     	    // CACHE Getting first informations about the accesses for cache-tiling
-//    	    get_cache_access_amount_function(scop, prog, act_band->sicadata->vecrow,&act_band->sicadata->sical1size,&act_band->sicadata->sical2size); //TODO
+    	    get_cache_access_amount_function(scop, prog, act_band->sicadata->vecrow,&act_band->sicadata->sical1size,&act_band->sicadata->sical2size); //TODO
 
     	    printf("[CACHE] Level-1: %i, Level-2: %i\n",act_band->sicadata->sical1size, act_band->sicadata->sical2size );
 
