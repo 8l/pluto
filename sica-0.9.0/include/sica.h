@@ -10,7 +10,7 @@
 
 #define SICA_STRING_SIZE 32
 
-#include "pluto.h"
+//#include "sica_accesses.h"
 
 /* [SICA] structure for SICA necessary data */
 struct sica_data{
@@ -31,6 +31,9 @@ struct sica_data{
     int **trans;			//pointer to transformation matrices for each statement in this band, trans[s]->mat[][]
     int **trans_inverted;	//inverted transformation matrix
     int transwidth;			//width of the quadratic transformation matrix TODO: is it always quadratic
+
+//    SICAAccess** sica_accesses_on_array; //array that stores the relevant accesses for vectorization for each array in a linked list
+										//usage: sica_accesses_on_array[arrayID]->...
 };
 typedef struct sica_data SICAData;
 
