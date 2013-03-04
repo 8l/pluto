@@ -12,6 +12,9 @@
 
 //#include "sica_accesses.h"
 
+//struct sica_access_matrices;
+//typedef struct sica_access_matrices SICAAccess;
+
 /* [SICA] structure for SICA necessary data */
 struct sica_data{
 	int isvec;				//is the band vectorizable?
