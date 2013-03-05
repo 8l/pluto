@@ -23,11 +23,9 @@ void sica_retile_band(PlutoProg *prog, Band *band, int *tile_sizes, int offset)
 	IF_DEBUG(if(band->sicadata->isvec){printf("VECTORIZED");}else{printf("VECTORIZED");});
     IF_DEBUG(      printf(" sica_retile_band step\n");  );
 	
-    int i, j, s;
-    int r, c;
+    int s;
     int depth, npar;
 
-    Stmt **stmts = prog->stmts;
     npar = prog->npar;
 
     int firstD = band->loop->depth;

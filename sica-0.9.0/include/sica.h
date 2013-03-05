@@ -10,11 +10,6 @@
 
 #define SICA_STRING_SIZE 32
 
-//#include "sica_accesses.h"
-
-//struct sica_access_matrices;
-//typedef struct sica_access_matrices SICAAccess;
-
 /* [SICA] structure for SICA necessary data */
 struct sica_data{
 	int isvec;				//is the band vectorizable?
@@ -35,8 +30,7 @@ struct sica_data{
     int **trans_inverted;	//inverted transformation matrix
     int transwidth;			//width of the quadratic transformation matrix TODO: is it always quadratic
 
-//    SICAAccess** sica_accesses_on_array; //array that stores the relevant accesses for vectorization for each array in a linked list
-										//usage: sica_accesses_on_array[arrayID]->...
+    int vec_accesses;		//number of counted (different) accesses by the vectorized loop in this band
 };
 typedef struct sica_data SICAData;
 

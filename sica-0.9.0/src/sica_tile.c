@@ -177,6 +177,8 @@ void sica_tile(PlutoProg *prog, scoplib_scop_p scop)
         	bands[i]->sicadata->upperboundoffset[s]=-1;
         }
         bands[i]->sicadata->nb_arrays=0;
+        bands[i]->sicadata->transwidth=0;
+        bands[i]->sicadata->vec_accesses=0;
     }
     
 
@@ -327,11 +329,12 @@ void sica_tile(PlutoProg *prog, scoplib_scop_p scop)
 				printf("[SICA] Array-ID: %i, name: %s\n", a, act_band->sicadata->id2arrayname[a]);
         }
 
-//		// [SICA] setup the empty array of sica_accesses structures
-//		act_band->sicadata->sica_accesses_on_array=(SICAAccess**)malloc(act_band->sicadata->nb_arrays*sizeof(SICAAccess*));
-//		for(a=0; a<act_band->sicadata->nb_arrays; a++)    {
-//			act_band->sicadata->sica_accesses_on_array[a]=NULL;
-//		}
+		// [SICA] setup the empty array of sica_accesses structures
+		SICAAccess** sica_accesses_on_array;
+		sica_accesses_on_array=(SICAAccess**)malloc(act_band->sicadata->nb_arrays*sizeof(SICAAccess*));
+		for(a=0; a<act_band->sicadata->nb_arrays; a++)    {
+			sica_accesses_on_array[a]=sica_accesses_malloc();
+		}
 
 
 	    printf("\tbands[%i], width=%i\n", i, act_band->width);
@@ -434,29 +437,82 @@ void sica_tile(PlutoProg *prog, scoplib_scop_p scop)
 			    	for(x=0;x<act_band->sicadata->transwidth;x++)    {
 			    		trans_access_mat[y][access_offset+x] = trans_access_iterators[x];
 			    	}
+		    	}
 
-			    	//This is now the transformed access
-		    		printf("TRANS-ROW:\t");
+		    	int act_array_id=sica_get_array_id(act_band, act_band->loop->stmts[s]->reads[r]->name);
+		    	printf("\t\t\t[SICA] Looking up the following array name: '%s' with id: '%i' and transformed access matrix:\n", act_band->loop->stmts[s]->reads[r]->name, act_array_id);
+		    	//This is now the transformed access
+		    	for(y=0;y<act_band->loop->stmts[s]->reads[r]->mat->alloc_nrows;y++)    {
+		    		printf("\t\t\t");
 		    		for(x=0;x<act_band->loop->stmts[s]->reads[r]->mat->alloc_ncols;x++)    {
-				    		printf("%i ", trans_access_mat[y][x]);
-				    	}
+							printf("%i ", trans_access_mat[y][x]);
+						}
 		    		printf("\n");
 		    	}
 
-		    	//store the access if it is relevant for vectorization AND new
-				//if(
+		    	//Now we have all necessary data concerning this access, check if we have to count it for vectorized accesses!
 
-						//(SICAAccess*)malloc(sizeof(SICAAccess));
+		    	//check if the access is a just a scalar type, not a real array access (e.g. alpha or a[const][const])
+		    	int entry_sum=sica_get_entry_sum(trans_access_mat, act_band->loop->stmts[s]->reads[r]->mat->alloc_nrows, act_band->loop->stmts[s]->reads[r]->mat->alloc_ncols);
 
-						//// [SICA] setup the array of sica_accesses structures
-						//act_band->sicadata->sica_accesses_on_array=(SICAAccess**)malloc(sizeof(SICAAccess));)
+		    	//IF it is a real array access...
+		    	if(entry_sum)    {
+		    		printf("\t\t\tThe Access on Array '%s' is an array access!\n", act_band->loop->stmts[s]->reads[r]->name);
+			    	for(y=0;y<act_band->loop->stmts[s]->reads[r]->mat->alloc_nrows;y++)    {
+
+			    		//...CHECK IF there is one or more dimensions that is accessed by the vectorized loop and...
+						if(act_band->sicadata->isvec&&trans_access_mat[y][access_offset+act_band->sicadata->vecrow])    {
+							printf("\t\t\t[SICA] VECTORIZATION: Array '%s' accesses dimension '%i' by a vectorized loop!\n", act_band->loop->stmts[s]->reads[r]->name, y);
+
+							int sica_access_is_new=1;
+
+							//...CHECK IF the access (matrix) is already recognized for this array (e.g. C[i][j]=C[i][j]+...). ...
+							printf("[SICA] ACT-POINTER: %p\n",sica_accesses_on_array[act_array_id]);
+							SICAAccess* act_access_temp=sica_accesses_on_array[act_array_id];
+
+							while(act_access_temp->next)    {
+								//CHECK IF THE act_access_temp->mat is equal to the actual one
+								int check_comparison=0;
+								check_comparison=sica_compare_access_matrices(trans_access_mat, act_access_temp->access_mat, act_band->loop->stmts[s]->reads[r]->mat->alloc_nrows, act_band->loop->stmts[s]->reads[r]->mat->alloc_ncols);
+
+								//IF THEY ARE EQUAL
+								if(check_comparison)    {
+									printf("THIS ACCESS IS ALREADY RECOGNIZED AND THEREFORE NOT ADDED!\”");
+									sica_access_is_new=0;
+									break;
+								}
+								act_access_temp=act_access_temp->next;
+							}
+
+							//...IF NOT, add it to the linked list for this array and increase the counter ...
+							if(sica_access_is_new)    {
+								act_access_temp->nrows = act_band->loop->stmts[s]->reads[r]->mat->alloc_nrows;
+								act_access_temp->ncols = act_band->loop->stmts[s]->reads[r]->mat->alloc_ncols;
+								act_band->sicadata->vec_accesses++;
+								printf("[SICA] adding the new access on pointer %p!\n",act_access_temp);
+								act_access_temp->next=sica_accesses_malloc();
+								printf("[SICA] after malloc             pointer %p!\n",act_access_temp);
+
+								act_access_temp->access_mat=sica_access_matrix_malloc(act_band->loop->stmts[s]->reads[r]->mat->alloc_nrows, act_band->loop->stmts[s]->reads[r]->mat->alloc_ncols);
+								sica_copy_access_matrix(act_access_temp->access_mat, trans_access_mat, act_band->loop->stmts[s]->reads[r]->mat->alloc_nrows, act_band->loop->stmts[s]->reads[r]->mat->alloc_ncols);
+							}
+
+						}
+						if(!act_band->sicadata->isvec)    {
+							printf("\t\t\t[SICA] THIS IS NOT A VECTORIZED BAND\n");
+						}
+
+			    	}
+		    	} else {
+		    		printf("\t\t\tThe Access on Array '%s' is NO array access!\n", act_band->loop->stmts[s]->reads[r]->name);
+		    	}
 
 		    }
 		    //->STOP READ ANALYSIS
 
 
 	    	//->START WRITE ANALYSIS
-		    printf("[SICA] Analyse the WRITE accesses for vectorization\n");
+		    printf("\n[SICA] Analyse the WRITE accesses for vectorization\n");
 		    printf("stmt=%i: nwrites=%i\n", s, act_band->loop->stmts[s]->nwrites);
 		    for(w=0;w<act_band->loop->stmts[s]->nwrites;w++)
 		    {
@@ -477,13 +533,21 @@ void sica_tile(PlutoProg *prog, scoplib_scop_p scop)
 		    }
 	    	//->STOP WRITE ANALYSIS
 
-		    //go through all accesses and check whether it is already recognized, otherwise add it
-
-		    //get the PluTo defined data types + (null)->default
-
-		    //recognize scalar dimensions by finding 0-mat and set them to be scalar ("0")
 
 	    }
+
+	    printf("[SICA] REPORT: There are %i accesses relevant for vectorization\n", act_band->sicadata->vec_accesses);
+
+	    printf("[SICA] Print the accesses on arrays structure:\n");
+		for(a=0; a<act_band->sicadata->nb_arrays; a++)    {
+			printf("\tArray '%s': \n",act_band->sicadata->id2arrayname[a]);
+			SICAAccess* act_access_temp=sica_accesses_on_array[a];
+			while(act_access_temp->next)    {
+				printf("\t\t%p:\n", act_access_temp);
+				act_access_temp=act_access_temp->next;
+			}
+		}
+	    //get the PluTo defined data types + (null)->default and calculate the tile quantities
 
 	    //NOW LOKK UP HOW MANY ACCESSES OF WHICH TYPE ARE AVAILABLE
 
