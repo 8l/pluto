@@ -8,6 +8,10 @@
 #ifndef SICA_H
 #define SICA_H
 
+#define ACCESS_IS_NOT_IDENTICAL 0
+#define ACCESS_IS_IDENTICAL 1
+#define ACCESS_IS_IN_SAME_STRIDE 2
+
 #define SICA_STRING_SIZE 32
 
 /* [SICA] structure for SICA necessary data */

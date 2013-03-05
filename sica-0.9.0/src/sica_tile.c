@@ -472,16 +472,26 @@ void sica_tile(PlutoProg *prog, scoplib_scop_p scop)
 
 							while(act_access_temp->next)    {
 								//CHECK IF THE act_access_temp->mat is equal to the actual one
-								int check_comparison=0;
+								int check_comparison=ACCESS_IS_NOT_IDENTICAL;
 								check_comparison=sica_compare_access_matrices(trans_access_mat, act_access_temp->access_mat, act_band->loop->stmts[s]->reads[r]->mat->alloc_nrows, act_band->loop->stmts[s]->reads[r]->mat->alloc_ncols);
 
 								//IF THEY ARE EQUAL
-								if(check_comparison)    {
-									printf("THIS ACCESS IS ALREADY RECOGNIZED AND THEREFORE NOT ADDED!\”");
+								if(check_comparison==ACCESS_IS_IDENTICAL)    {
+									printf("THIS ACCESS IS ALREADY RECOGNIZED AND THEREFORE NOT ADDED!\n");
 									sica_access_is_new=0;
 									break;
 								}
-								act_access_temp=act_access_temp->next;
+
+								if(check_comparison==ACCESS_IS_IN_SAME_STRIDE) {
+									printf("THIS ACCESS IS ALREADY RECOGNIZED IN A PREVIOUS STRIDE AND THEREFORE NOT ADDED!\n");
+									sica_access_is_new=0;
+									break;
+								}
+
+								if(check_comparison==ACCESS_IS_NOT_IDENTICAL){
+									printf("THIS ACCESS IS NEW!\n");
+									act_access_temp=act_access_temp->next;
+								}
 							}
 
 							//...IF NOT, add it to the linked list for this array and increase the counter ...
