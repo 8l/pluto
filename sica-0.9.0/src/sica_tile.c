@@ -253,10 +253,6 @@ void sica_tile(PlutoProg *prog)
             	printf("[SICA] NO vectorized access\n");
         	    printf("[SICA] tile sizes for band %i -> Level-1: %i, Level-2: %i\n\n",i,act_band->sicadata->sical1size, act_band->sicadata->sical2size );
     		}
-
-    	    // CACHE Getting first informations about the accesses for cache-tiling
-    	    //get_cache_access_amount_function(scop, prog, act_band->sicadata->vecrow,&act_band->sicadata->sical1size,&act_band->sicadata->sical2size); //TODO
-
     	}
     }
     
