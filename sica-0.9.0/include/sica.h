@@ -35,6 +35,7 @@ struct sica_data{
     int transwidth;			//width of the quadratic transformation matrix TODO: is it always quadratic
 
     int vec_accesses;		//number of counted (different) accesses by the vectorized loop in this band
+    int innermost_vec_accesses;   //number of counted (different) INNERMOST accesses by the vectorized loop in this band
 };
 typedef struct sica_data SICAData;
 
