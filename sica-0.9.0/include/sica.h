@@ -36,6 +36,7 @@ struct sica_data{
 
     int vec_accesses;		//number of counted (different) accesses by the vectorized loop in this band
     int innermost_vec_accesses;   //number of counted (different) INNERMOST accesses by the vectorized loop in this band
+    int bytes_per_vecit;			//umber of bytes that have to be loaded per iteration of the vectorized loop within this band
 };
 typedef struct sica_data SICAData;
 
