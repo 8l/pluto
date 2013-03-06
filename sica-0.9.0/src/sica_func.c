@@ -22,7 +22,7 @@
 #include "sica_func.h"
 
 int sica_get_bytes_of_type(char *data_type)    {
-	printf("HERE!!!!!!!!!!");
+
 	int new_bytes=0;
 
 	if(!strcmp(data_type,"int"))    {
