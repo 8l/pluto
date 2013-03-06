@@ -235,8 +235,7 @@ void sica_tile(PlutoProg *prog)
 
     	sica_get_band_specific_tile_sizes(act_band);
 
-    	if(act_band->sicadata->isvec)
-    	{
+    	if(act_band->sicadata->isvec)    {
     	    //printf("VEC\tbands[%i], nstmts=%i\n", i, act_band->loop->nstmts);
     		if(act_band->sicadata->vec_accesses>0)    {
     		act_band->sicadata->sical1size=8192/act_band->sicadata->vec_accesses; // [SICA] HERE A FUNCTION SHOULD BE CALLED THAT CALCULATES THE SICA SIZES FOR THAT BAND

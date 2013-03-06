@@ -22,7 +22,7 @@
 #include "sica_func.h"
 
 int sica_get_bytes_of_type(char *data_type)    {
-
+	printf("HERE!!!!!!!!!!");
 	int new_bytes=0;
 
 	if(!strcmp(data_type,"int"))    {
@@ -314,9 +314,16 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 								sica_copy_access_matrix(act_access_temp->access_mat, trans_access_mat, act_band->loop->stmts[s]->reads[r]->mat->alloc_nrows, act_band->loop->stmts[s]->reads[r]->mat->alloc_ncols);
 								IF_DEBUG(printf("[SICA] ADDED READ ACCESS ON '%s'!\n", act_band->sicadata->id2arrayname[act_array_id]););
 
+								int new_bytes=0;
+								//IF THE DATA TYPE IS DEFINED
+								if(act_band->loop->stmts[s]->reads[r]->symbol->data_type)    {
 								IF_DEBUG(printf("[SICA] THIS ACCESS IS OF TYPE '%s'!\n", act_band->loop->stmts[s]->reads[r]->symbol->data_type););
 								//COUNT the bytes that have to be loaded for this access
 								int new_bytes=sica_get_bytes_of_type(act_band->loop->stmts[s]->reads[r]->symbol->data_type);
+								} else {
+									printf("[SICA] WARNING: The datatype of an array was not recognized and therefore set to a DEFAULT VALUE: %i Bytes!\n", SICA_DEFAULT_DATA_BYTES);
+									new_bytes=SICA_DEFAULT_DATA_BYTES;
+								}
 								act_band->sicadata->bytes_per_vecit+=new_bytes;
 							}
 
@@ -469,9 +476,16 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 								sica_copy_access_matrix(act_access_temp->access_mat, trans_access_mat, act_band->loop->stmts[s]->writes[w]->mat->alloc_nrows, act_band->loop->stmts[s]->writes[w]->mat->alloc_ncols);
 								IF_DEBUG(printf("[SICA] ADDED WRITE ACCESS ON '%s'!\n", act_band->sicadata->id2arrayname[act_array_id]););
 
+								int new_bytes=0;
+								//IF THE DATA TYPE IS DEFINED
+								if(act_band->loop->stmts[s]->writes[w]->symbol->data_type)    {
 								IF_DEBUG(printf("[SICA] THIS ACCESS IS OF TYPE '%s'!\n", act_band->loop->stmts[s]->writes[w]->symbol->data_type););
 								//COUNT the bytes that have to be loaded for this access
 								int new_bytes=sica_get_bytes_of_type(act_band->loop->stmts[s]->writes[w]->symbol->data_type);
+								} else {
+									printf("[SICA] WARNING: The datatype of an array was not recognized and therefore set to a DEFAULT VALUE: %i Bytes!\n", SICA_DEFAULT_DATA_BYTES);
+									new_bytes=SICA_DEFAULT_DATA_BYTES;
+								}
 								act_band->sicadata->bytes_per_vecit+=new_bytes;
 							}
 
