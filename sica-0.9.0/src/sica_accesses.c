@@ -18,8 +18,7 @@
 #include "pluto.h"
 
 #include "sica_accesses.h"
-
-#include "cache_math_func.h"
+#include "sica_math_func.h"
 
 int** sica_access_matrix_malloc(int rows, int cols)
 {

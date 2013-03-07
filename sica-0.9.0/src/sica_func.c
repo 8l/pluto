@@ -18,7 +18,6 @@
 #include "pluto.h"
 
 #include "sica_accesses.h"
-
 #include "sica_func.h"
 
 int sica_get_bytes_of_type(char *data_type)    {

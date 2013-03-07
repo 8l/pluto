@@ -1,5 +1,5 @@
 /*
- * cache_math_func.c
+ * sica_math_func.c
  *
  *  Created on: 25.02.2013
  *      Author: dfeld
@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 
-#include "cache_math_func.h"
+#include "sica_math_func.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 //                              ECHELON DETERMINANT                           //

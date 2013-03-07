@@ -22,8 +22,7 @@
 #include "sica_accesses.h"
 #include "sica_func.h"
 #include "sica_tilesizes.h"
-
-#include "cache_math_func.h"
+#include "sica_math_func.h"
 
 /* Manipulates statement domain and transformation to tile scattering 
  * dimensions from firstD to lastD */
@@ -169,7 +168,7 @@ void sica_tile(PlutoProg *prog)
     sica_hardware->regsize = id2regsize(get_hardware_cache_infos(SSE_ID));
     sica_hardware->l1cachesize = get_hardware_cache_infos(L1CACHE_SIZE);
     sica_hardware->l2cachesize = get_hardware_cache_infos(L2CACHE_SIZE);
-    sica_hardware->ratio=0.9;
+    sica_hardware->ratio=1.0;
 
     print_l1cache_hierarchie(sica_hardware->regsize, sica_hardware->l1cachesize);
 
@@ -259,7 +258,7 @@ void sica_tile(PlutoProg *prog)
     	    //printf("VEC\tbands[%i], nstmts=%i\n", i, act_band->loop->nstmts);
     		if(act_band->sicadata->vec_accesses>0)    {
         		IF_DEBUG(printf("[SICA] vectorized accesses in this band: %i\n", act_band->sicadata->vec_accesses););
-            	printf("[SICA] percentage of INNERMOST vectorized accesses: %.2f \%\n", 100.0*(float)act_band->sicadata->innermost_vec_accesses/(float)act_band->sicadata->vec_accesses);
+            	printf("[SICA] percentage of INNERMOST vectorized accesses: %.2f\n", 100.0*(float)act_band->sicadata->innermost_vec_accesses/(float)act_band->sicadata->vec_accesses);
             	IF_DEBUG(printf("[SICA] bytes to be loaded by the vectorized accesses: %i Bytes\n", act_band->sicadata->bytes_per_vecit););
 
     		act_band->sicadata->sical1size=sica_get_l1size(act_band->sicadata, sica_hardware); // [SICA] HERE A FUNCTION SHOULD BE CALLED THAT CALCULATES THE SICA SIZES FOR THAT BAND

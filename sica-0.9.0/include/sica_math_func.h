@@ -1,12 +1,12 @@
 /*
- * cache_math_func.c
+ * sica_math_func.c
  *
  *  Created on: 25.02.2013
  *      Author: dfeld
  */
 
-#ifndef CACHE_MATH_FUNC_H_
-#define CACHE_MATH_FUNC_H_
+#ifndef SICA_MATH_FUNC_H_
+#define SICA_MATH_FUNC_H_
 
 void sica_mult_matrices(float* mult1, float* mult2, float* res, int rows1, int columns1, int rows2, int columns2);
 
@@ -28,4 +28,4 @@ void sica_echelon_inverse(float** inverse_matrix, float** matrix,int N);
 
 void sica_inverse(int** matrix, int** inverse_matrix, int N);
 
-#endif /* CACHE_MATH_FUNC_H_ */
+#endif /* SICA_MATH_FUNC_H_ */
