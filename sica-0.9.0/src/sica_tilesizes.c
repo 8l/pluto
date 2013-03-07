@@ -26,7 +26,7 @@ int sica_get_l1size(SICAData* sicadata, SICAHardware* sicahardware)    {
 	//get the theoretical cache fitting quantity
 	l1tilesize=(int)(sicahardware->ratio*(float)((sicahardware->l1cachesize*1024)/sicadata->bytes_per_vecit));
 
-	//get the theoretical regsize-floor
+	//get the regsize-floor related to the largest available datatype in this band
 	int regsizeinelements=(sicahardware->regsize/8)/(sicadata->largest_data_type);
 	IF_DEBUG(printf("[SICA] Largest datatype for this band: %i\n", sicadata->largest_data_type););
 	IF_DEBUG(printf("[SICA] %i elements fit to the register\n", regsizeinelements););
