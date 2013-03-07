@@ -21,7 +21,7 @@ SICA_SOURCES_DIR = $(top_srcdir)/sica-0.9.0/src
 
 SICA_CACHE_SOURCES = $(SICA_SOURCES_DIR)/amdspeccache.c $(SICA_SOURCES_DIR)/compilerinfo.c $(SICA_SOURCES_DIR)/cpuinfo.c $(SICA_SOURCES_DIR)/hwanalysis.c $(SICA_SOURCES_DIR)/intelspeccache.c $(SICA_SOURCES_DIR)/mathhelp.c $(SICA_SOURCES_DIR)/printconvert.c
 SICA_ANALYSIS_SOURCES = $(SICA_SOURCES_DIR)/cache_math_func.c #$(SICA_SOURCES_DIR)/cache_analysis_func.c
-SICA_TILE_SOURCES = $(SICA_SOURCES_DIR)/sica_tile.c $(SICA_SOURCES_DIR)/sica_post_transform.c $(SICA_SOURCES_DIR)/sica_retile.c $(SICA_SOURCES_DIR)/sica_accesses.c $(SICA_SOURCES_DIR)/sica_func.c
+SICA_TILE_SOURCES = $(SICA_SOURCES_DIR)/sica_tile.c $(SICA_SOURCES_DIR)/sica_post_transform.c $(SICA_SOURCES_DIR)/sica_retile.c $(SICA_SOURCES_DIR)/sica_accesses.c $(SICA_SOURCES_DIR)/sica_func.c $(SICA_SOURCES_DIR)/sica_tilesizes.c
 
 SICA_SOURCES = $(SICA_CACHE_SOURCES) $(SICA_ANALYSIS_SOURCES) $(SICA_TILE_SOURCES)
 

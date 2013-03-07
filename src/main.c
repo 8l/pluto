@@ -35,9 +35,9 @@
 #include "program.h"
 #include "version.h"
 
-#include "hwanalysis.h"
 #include "sica_post_transform.h"
 #include "sica_tile.h"
+#include "sica_tilesizes.h"
 
 #include "clan/clan.h"
 #include "candl/candl.h"
@@ -309,19 +309,6 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
                 fprintf(stdout, "[SICA] Warning: pre-vectorization in enabled automatically to support SICA\n");
                 options->prevector=1;
             }
-            IF_DEBUG(print_all_cache_information());
-
-            int regsize = id2regsize(get_hardware_cache_infos(SSE_ID));
-            int l1cachesize = get_hardware_cache_infos(L1CACHE_SIZE);
-            int l2cachesize = get_hardware_cache_infos(L2CACHE_SIZE);
-
-            print_l1cache_hierarchie(regsize, l1cachesize);
-
-            if(options->l2tile)
-            {
-                print_addl2cache_hierarchie(l2cachesize);
-            }
-            printf("\n");
         }
     }
 

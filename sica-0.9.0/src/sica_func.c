@@ -58,6 +58,7 @@ int i, s;
         bands[i]->sicadata->vec_accesses=0;
         bands[i]->sicadata->innermost_vec_accesses=0;
         bands[i]->sicadata->bytes_per_vecit=0;
+        bands[i]->sicadata->largest_data_type=0;
     }
 }
 
@@ -319,11 +320,16 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 								if(act_band->loop->stmts[s]->reads[r]->symbol->data_type)    {
 								IF_DEBUG(printf("[SICA] THIS ACCESS IS OF TYPE '%s'!\n", act_band->loop->stmts[s]->reads[r]->symbol->data_type););
 								//COUNT the bytes that have to be loaded for this access
-								int new_bytes=sica_get_bytes_of_type(act_band->loop->stmts[s]->reads[r]->symbol->data_type);
+								new_bytes=sica_get_bytes_of_type(act_band->loop->stmts[s]->reads[r]->symbol->data_type);
 								} else {
 									printf("[SICA] WARNING: The datatype of an array was not recognized and therefore set to a DEFAULT VALUE: %i Bytes!\n", SICA_DEFAULT_DATA_BYTES);
 									new_bytes=SICA_DEFAULT_DATA_BYTES;
 								}
+								//[SICA] update the largest datatype if necessary
+								if(new_bytes>act_band->sicadata->largest_data_type){
+									act_band->sicadata->largest_data_type=new_bytes;
+								}
+								//[SICA] add the additional bytes
 								act_band->sicadata->bytes_per_vecit+=new_bytes;
 							}
 
@@ -486,6 +492,11 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 									printf("[SICA] WARNING: The datatype of an array was not recognized and therefore set to a DEFAULT VALUE: %i Bytes!\n", SICA_DEFAULT_DATA_BYTES);
 									new_bytes=SICA_DEFAULT_DATA_BYTES;
 								}
+								//[SICA] update the largest datatype if necessary
+								if(new_bytes>act_band->sicadata->largest_data_type){
+									act_band->sicadata->largest_data_type=new_bytes;
+								}
+								//[SICA] add the additional bytes
 								act_band->sicadata->bytes_per_vecit+=new_bytes;
 							}
 
