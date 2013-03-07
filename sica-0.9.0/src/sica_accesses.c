@@ -19,6 +19,8 @@
 
 #include "sica_accesses.h"
 
+#include "cache_math_func.h"
+
 int** sica_access_matrix_malloc(int rows, int cols)
 {
 	int y;
@@ -202,24 +204,7 @@ void sica_get_trans_matrix(Band** bands, int nbands)    {
    	    }
 
     	// [SICA] invert it
-    	// [SICA] temp -> linearize the array
-    	float* trans_lin = (float*)malloc(act_band->sicadata->transwidth*act_band->sicadata->transwidth*sizeof(float));
-
-    	for(y=0; y < act_band->sicadata->transwidth; y++)    {
-	   	    for(x=0; x < act_band->sicadata->transwidth; x++)    {
-	   	    	trans_lin[y*act_band->sicadata->transwidth+x]=(float)act_band->sicadata->trans[y][x];
-	   	    }
-    	}
-
-    	float* trans_inverted_lin = (float*)malloc(act_band->sicadata->transwidth*act_band->sicadata->transwidth*sizeof(float));
-
-    	cache_inverse(trans_lin, trans_inverted_lin, act_band->sicadata->transwidth);
-
-    	for(y=0; y < act_band->sicadata->transwidth; y++)    {
-	   	    for(x=0; x < act_band->sicadata->transwidth; x++)    {
-	   	    	act_band->sicadata->trans_inverted[y][x]=(int)trans_inverted_lin[y*act_band->sicadata->transwidth+x];
-	   	    }
-    	}
+    	sica_inverse(act_band->sicadata->trans, act_band->sicadata->trans_inverted, act_band->sicadata->transwidth);
       }
     }
 	// [SICA] STOP extract the transformation matrices before prevectorize

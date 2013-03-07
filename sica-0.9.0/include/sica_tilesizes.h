@@ -18,4 +18,8 @@ struct sica_hwinfo{
 };
 typedef struct sica_hwinfo SICAHardware;
 
+int sica_get_l1size(SICAData* sicadata, SICAHardware* sicahardware);
+
+int sica_get_l2size(SICAHardware* sicahardware);
+
 #endif /* SICA_TILESIZES_H_ */

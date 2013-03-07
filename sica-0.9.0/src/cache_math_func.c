@@ -6,6 +6,12 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <assert.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/time.h>
 
 #include "cache_math_func.h"
 
@@ -13,7 +19,7 @@
 //                              ECHELON DETERMINANT                           //
 ////////////////////////////////////////////////////////////////////////////////
 
-void cache_mult_matrices(float* mult1, float* mult2, float* res, int rows1, int columns1, int rows2, int columns2)
+void sica_mult_matrices(float* mult1, float* mult2, float* res, int rows1, int columns1, int rows2, int columns2)
 {
 	if(columns1!=rows2)
 	{
@@ -26,7 +32,7 @@ void cache_mult_matrices(float* mult1, float* mult2, float* res, int rows1, int 
 
 }
 
-int cache_minusone_pow(int exponent)
+int sica_minusone_pow(int exponent)
 {
 	if((exponent%2)==0)
 	{
@@ -38,32 +44,56 @@ int cache_minusone_pow(int exponent)
 	}
 }
 
-void cache_print_matrix(float* matrix, int rows, int columns)
+void sica_print_matrix(float** matrix, int rows, int columns)
 {
 	int i,j;
 	for(i=0; i<rows; i++)
 	{
 		for(j=0; j<columns; j++)
 		{
-			printf("%f \t",matrix[columns*i+j]);
+			printf("%f \t",matrix[i][j]);
 		}
 		printf("\n");
 	}
 }
 
-void cache_cpy_matrix(float* matrix, float* temp_matrix, int rows, int columns)
+void sica_cpy_matrix(float** matrix, float** temp_matrix, int rows, int columns)
 {
 	int i, j;
 	for(i=0; i<rows; i++)
 		{
 			for(j=0; j<columns; j++)
 			{
-				temp_matrix[columns*i+j]=matrix[i*columns+j];
+				temp_matrix[i][j]=matrix[i][j];
 			}
 		}
 }
 
-int cache_echelon_form(float* temp_matrix, int rows, int columns)
+void sica_cpy_matrixINT2FLOAT(int** matrix, float** temp_matrix, int rows, int columns)
+{
+	int i, j;
+	for(i=0; i<rows; i++)
+		{
+			for(j=0; j<columns; j++)
+			{
+				temp_matrix[i][j]=(float)matrix[i][j];
+			}
+		}
+}
+
+void sica_cpy_matrixFLOAT2INT(float** matrix, int** temp_matrix, int rows, int columns)
+{
+	int i, j;
+	for(i=0; i<rows; i++)
+		{
+			for(j=0; j<columns; j++)
+			{
+				temp_matrix[i][j]=(int)matrix[i][j];
+			}
+		}
+}
+
+int sica_echelon_form(float** det_matrix, int rows, int columns)
 {
 	float factor;
 	int i,j,k;
@@ -77,11 +107,11 @@ int cache_echelon_form(float* temp_matrix, int rows, int columns)
 		for(i=j+1; i<rows; i++)
 		{
 			//zero pivot element
-			if(temp_matrix[columns*j+j]==0)
+			if(det_matrix[j][j]==0)
 			{
 				int count=j;
 				//find swappable row
-				while((temp_matrix[columns*count+j]==0)&&(count<rows))
+				while((det_matrix[count][j]==0)&&(count<rows))
 				{
 					count++;
 				}
@@ -97,9 +127,9 @@ int cache_echelon_form(float* temp_matrix, int rows, int columns)
 					float help;
 					for(t=j;t<columns;t++)
 					{
-						help=temp_matrix[columns*j+t];
-						temp_matrix[columns*j+t]=temp_matrix[columns*count+t];
-						temp_matrix[columns*count+t]=help;
+						help=det_matrix[j][t];
+						det_matrix[j][t]=det_matrix[count][t];
+						det_matrix[count][t]=help;
 					}
 					swap_counter++;
 				}
@@ -107,10 +137,11 @@ int cache_echelon_form(float* temp_matrix, int rows, int columns)
 
 			if(finished_row==0)
 			{
-				factor=(temp_matrix[columns*i+j]/temp_matrix[columns*j+j]);
+				factor=(det_matrix[i][j]/det_matrix[j][j]);
+				//printf("Calculating with pivot in line %i: L%i=L%i-%f*L%i\n",j,i,i,factor,j);
 				for(k=j;k<columns;k++)
 				{
-					temp_matrix[columns*i+k]=temp_matrix[columns*i+k]-temp_matrix[columns*j+k]*factor;
+					det_matrix[i][k]=det_matrix[i][k]-det_matrix[j][k]*factor;
 				}
 			}
 		}
@@ -119,34 +150,33 @@ int cache_echelon_form(float* temp_matrix, int rows, int columns)
 }
 
 
-float cache_echelon_determinant(float* temp_matrix, int N)
+float sica_echelon_determinant(float** matrix, int N)
 {
 	float det=1.0;
 	int i;
+
+	float** det_matrix;//for calculating the determinant
+	 det_matrix=(float**)malloc(N*sizeof(float*));
+	for(i=0; i<N; i++)    {
+		 det_matrix[i]=(float*)malloc(N*sizeof(float));
+	}
+	//generates a temporary working copy for the transformation
+	sica_cpy_matrix(matrix,  det_matrix, N, N);
+
 	//returns the number of row swaps
-	int swap_counter=cache_echelon_form(temp_matrix, N, N);
+	int swap_counter=sica_echelon_form(det_matrix, N, N);
 
 	//Multiply diagonal of the echelon form
 	for(i=0;i<N;i++)
 	{
-		det=det*temp_matrix[N*i+i];
+		det=det*det_matrix[i][i];
 	}
 
 	/* Swap-counter counts the number of row-swaps done, so that (-1)^sc must be
 	 * multiplied
 	 */
-	det=det*cache_minusone_pow(swap_counter);
+	det=det*sica_minusone_pow(swap_counter);
 
-	return det;
-}
-
-
-float cache_determinant(float* matrix, int N)
-{
-	float temp_matrix[N*N];
-	//generates a temporary working copy for the transformation
-	cache_cpy_matrix(matrix, temp_matrix, N, N);
-	float det = cache_echelon_determinant(temp_matrix, N);
 	return det;
 }
 
@@ -154,28 +184,28 @@ float cache_determinant(float* matrix, int N)
 ////////////////////////////////////////////////////////////////////////////////
 //                              INVERSE                                       //
 ////////////////////////////////////////////////////////////////////////////////
-void cache_setup_identitymatrix(float* ident_matrix,int N)
+void sica_setup_identitymatrix(float** ident_matrix,int N)
 {
 	int i,j;
 	for(i=0;i<N;i++)
 	{
 		for(j=0;j<N;j++)
 		{
-			ident_matrix[i*N+j]=0;
+			ident_matrix[i][j]=0.0;
 		}
 	}
 	for(i=0;i<N;i++)
 	{
-		ident_matrix[i*N+i]=1;
+		ident_matrix[i][i]=1.0;
 	}
 }
 
-void cache_echelon_inverse(float* inverse_matrix, float* matrix,int N)
+void sica_echelon_inverse(float** inverse_matrix, float** matrix,int N)
 {
 	float factor;
 	int i,j,k;
 
-	cache_setup_identitymatrix(inverse_matrix,N);
+	sica_setup_identitymatrix(inverse_matrix,N);
 
 	//invert it!
 
@@ -187,11 +217,11 @@ void cache_echelon_inverse(float* inverse_matrix, float* matrix,int N)
 		for(i=j+1; i<N; i++)
 		{
 			//zero pivot element
-			if(matrix[N*j+j]==0)
+			if(matrix[j][j]==0)
 			{
 				int count=j;
 				//find addable row
-				while((matrix[N*count+j]==0)&&(count<N))
+				while((matrix[count][j]==0)&&(count<N))
 				{
 					count++;
 				}
@@ -208,8 +238,8 @@ void cache_echelon_inverse(float* inverse_matrix, float* matrix,int N)
 					for(t=0;t<N;t++)
 					{
 
-						matrix[N*j+t]+=matrix[N*count+t];
-						inverse_matrix[N*j+t]+=inverse_matrix[N*count+t];
+						matrix[j][t]+=matrix[count][t];
+						inverse_matrix[j][t]+=inverse_matrix[count][t];
 
 					}
 				}
@@ -217,7 +247,7 @@ void cache_echelon_inverse(float* inverse_matrix, float* matrix,int N)
 
 			if(finished_row==0)
 			{
-				factor=(matrix[N*i+j]/matrix[N*j+j]);
+				factor=(matrix[i][j]/matrix[j][j]);
 				/*
 				 * ToDo: Check whether it is correct to just add from J on,
 				 * because there should be only zeros left of it, is it possible
@@ -230,12 +260,12 @@ void cache_echelon_inverse(float* inverse_matrix, float* matrix,int N)
 				for(k=j;k<N;k++)
 				{
 					//manipulating the source matrix
-					matrix[N*i+k]=matrix[N*i+k]-matrix[N*j+k]*factor;
+					matrix[i][k]=matrix[i][k]-matrix[j][k]*factor;
 				}
 				for(k=0;k<N;k++)
 				{
 				//manipulating the inverse-matrix elements
-				inverse_matrix[N*i+k]=inverse_matrix[N*i+k]-inverse_matrix[N*j+k]*factor;
+				inverse_matrix[i][k]=inverse_matrix[i][k]-inverse_matrix[j][k]*factor;
 				}
 			}
 		}
@@ -245,11 +275,11 @@ void cache_echelon_inverse(float* inverse_matrix, float* matrix,int N)
 	//Normalize the diagonal
 	for(i=0;i<N;i++)
 	{
-		quotient=matrix[N*i+i];
+		quotient=matrix[i][i];
 		for(j=0;j<N;j++)
 		{
-			matrix[N*i+j]=matrix[N*i+j]/quotient;
-			inverse_matrix[N*i+j]=inverse_matrix[N*i+j]/quotient;
+			matrix[i][j]=matrix[i][j]/quotient;
+			inverse_matrix[i][j]=inverse_matrix[i][j]/quotient;
 		}
 	}
 
@@ -258,46 +288,49 @@ void cache_echelon_inverse(float* inverse_matrix, float* matrix,int N)
 	{
 		for(i=j-1; i>=0; i--)
 		{
-			factor=matrix[N*i+j];
+			factor=matrix[i][j];
 			for(k=0;k<N;k++)
 			{
-				matrix[N*i+k]=matrix[N*i+k]-matrix[N*j+k]*factor;
+				matrix[i][k]=matrix[i][k]-matrix[j][k]*factor;
 				//manipulating the inverse elements
-				inverse_matrix[N*i+k]=inverse_matrix[N*i+k]-inverse_matrix[N*j+k]*factor;
+				inverse_matrix[i][k]=inverse_matrix[i][k]-inverse_matrix[j][k]*factor;
 			}
 		}
 	}
 }
 
 
-void cache_inverse(float* matrix, float* inverse_matrix, int N)
+void sica_inverse(int** matrix, int** matrix_inverted, int N)
 {
-	float temp_matrix[N*N];//for calculating the determinant
-	//generates a temporary working copy for the transformation
-	cache_cpy_matrix(matrix, temp_matrix, N, N);
+	int i;
 
-	float det = cache_echelon_determinant(temp_matrix, N);
+	//create temporaray float arrays for the calculation
+	float** temp_matrix;//for calculating the determinant
+	temp_matrix=(float**)malloc(N*sizeof(float*));
+	for(i=0; i<N; i++)    {
+		temp_matrix[i]=(float*)malloc(N*sizeof(float));
+	}
+
+	float** temp_matrix_inverted;//for calculating the determinant
+	temp_matrix_inverted=(float**)malloc(N*sizeof(float*));
+	for(i=0; i<N; i++)    {
+		temp_matrix_inverted[i]=(float*)malloc(N*sizeof(float));
+	}
+
+	//generates a temporary working copy for the transformation
+	sica_cpy_matrixINT2FLOAT(matrix, temp_matrix, N, N);
+	//sica_cpy_matrixINT2FLOAT(matrix_inverted, temp_matrix_inverted, N, N);
+
+	float det = sica_echelon_determinant(temp_matrix, N);
 	if(det==0)
 	{
 		printf("[ERROR]: Matrix not invertible!!!\n");
 	}
 	else
 	{
-		cache_echelon_inverse(inverse_matrix,matrix, N);
+		sica_echelon_inverse(temp_matrix_inverted,temp_matrix, N);
+
+		sica_cpy_matrixFLOAT2INT(temp_matrix_inverted, matrix_inverted, N, N);
 	}
 }
 
-void cache_vec_times_matrix(float* solution_vec, float* vector, float* matrix, int rows, int columns)
-{
-	int i,j;
-	float accu;
-	for(j=0;j<columns;j++)
-	{
-		accu=0;
-		for(i=0;i<rows;i++)
-		{
-			accu+=vector[i]*matrix[i*columns+j];
-		}
-		solution_vec[j]=accu;
-	}
-}
