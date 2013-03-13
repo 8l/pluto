@@ -13,9 +13,9 @@
 
 void print_all_cache_information();
 
-void print_l1cache_hierarchie(int , int );
+void print_l1cache_hierarchy(int , int );
 
-void print_addl2cache_hierarchie(int );
+void print_addl2cache_hierarchy(int );
 
 char* id2sse(int );
 

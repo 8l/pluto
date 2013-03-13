@@ -152,25 +152,33 @@ void sica_get_trans_matrix(Band** bands, int nbands)    {
 	for (i=0; i<nbands; i++) {
       Band* act_band=bands[i];
       for(s=0; s<act_band->loop->nstmts;s++)    {
-    	//calculatin the column offset -> TODO: SCALAR DIMENSIONS ARE MISSING, TAKE THE TRANSFORMATION FROM PROG???
+    	//calculation the column offset -> TODO: SCALAR DIMENSIONS ARE MISSING, TAKE THE TRANSFORMATION FROM PROG???
         int firstD = act_band->loop->depth;
         int lastD = act_band->loop->depth+act_band->width-1;
-        int widthD=lastD-firstD;
+        int widthD=lastD-firstD; //=act_band->width
 
-        int coloffset=0;
-        act_band->sicadata->transwidth=widthD+1;
+        //act_band->sicadata->transwidth=widthD+1;
+        //TODO: WRONG NEW TRY, this dimension should fit for the transformation
+        act_band->sicadata->transwidth=act_band->loop->stmts[s]->dim_orig;
+        printf("HERE: Setting transwidth on band %i for statement %i to value %i\n", i, s, act_band->loop->stmts[s]->dim_orig);
+        //printf("[SICA] widthD+1=%i, transwidth=%i, dim=%i, dim_orig=%i\n[SICA] number of tiled dimensions from original pluto tile step: %i\n", widthD+1, act_band->sicadata->transwidth, act_band->loop->stmts[s]->dim, act_band->loop->stmts[s]->dim_orig, act_band->width);
 
-        if(options->tile)    {
-        	coloffset=widthD+1;
-        }
-        if(options->l2tile)    {
-        	coloffset=2*(widthD+1);
-        }
+        IF_DEBUG2(printf("[SICA] (not parameter or scalar dimension related) columns in the transformation matrix: stmt->dim + 1 = %i\n", act_band->loop->stmts[s]->dim);                               );
+        IF_DEBUG2(printf("[SICA] columnoffset in the transformation matrix: stmt->dim -act_band->loop->stmts[s]->dim_orig = %i\n", act_band->loop->stmts[s]->dim - act_band->loop->stmts[s]->dim_orig); );
 
-        int rowoffset=coloffset;
+        //act_band->sicadata->tilewidth=act_band->width;
+
+        act_band->sicadata->coloffset=act_band->loop->stmts[s]->dim - act_band->loop->stmts[s]->dim_orig; //tile dimensionality is already in this calculation!
+//        if(options->l2tile)    {
+//        	act_band->sicadata->coloffset=2*(act_band->sicadata->coloffset);//act_band->sicadata->transwidth;
+//        }
+
+        int coloffset=act_band->sicadata->coloffset;
+
+        //int rowoffset=coloffset; //not necessary anymore cause all non-trans lines are skipped
 
     	IF_DEBUG2(printf("[SICA] column offset: %i\n", coloffset););
-    	IF_DEBUG2(printf("[SICA] row offset: %i\n\n", rowoffset););
+    	//IF_DEBUG2(printf("[SICA] row offset: %i\n\n", rowoffset););
 
     	////malloc the sicadata->trans matrices and fill it
     	act_band->sicadata->trans=(int**)malloc(act_band->sicadata->transwidth*sizeof(int*));
@@ -183,6 +191,9 @@ void sica_get_trans_matrix(Band** bands, int nbands)    {
     		act_band->sicadata->trans_inverted[x]=(int*)malloc(act_band->sicadata->transwidth*sizeof(int));
     	}
 
+
+    	//printf("[SICA] Tile statement %i with dim_orig %i\n", s+1, act_band->loop->stmts[s]->dim_orig);
+
     	//fill it
     	int addrowoffset=0;
     	for(y=0; y < act_band->sicadata->transwidth; y++)    {
@@ -190,20 +201,33 @@ void sica_get_trans_matrix(Band** bands, int nbands)    {
     		 * so if the sum of all elements but the last is 0
     		 */
     		int sum = 0;
-    		for(x=0;x<act_band->loop->stmts[s]->trans->ncols-1;x++)    {
-    			sum += act_band->loop->stmts[s]->trans->val[y][x];
+    		int skip=1;
+    		while(skip)    {
+    			IF_DEBUG2(printf("ANALYSE THE FOLLOWING LINE in S%i with act_band->sicadata->transwidth=%i: ", s+1, act_band->sicadata->transwidth););
+        		for(x=0;x<act_band->sicadata->transwidth;x++)    {
+        			IF_DEBUG2(printf("%i ",act_band->loop->stmts[s]->trans->val[y+addrowoffset][x+coloffset]););
+        			sum += act_band->loop->stmts[s]->trans->val[y+addrowoffset][x+coloffset];
+        		}
+        		IF_DEBUG2(printf("\n"););
+
+        		if(sum==0)    {
+        			IF_DEBUG2(printf("[SICA] Skipping row %i\n",y+addrowoffset););
+        			addrowoffset++;
+        		} else {
+        			skip=0;
+        		}
+
     		}
-    		if(sum==0)    {
-    			addrowoffset++;
-    		IF_DEBUG2(printf("[SICA] Skipping row %i\n",y););
-    		}
+
 	   	    for(x=0; x < act_band->sicadata->transwidth; x++)    {
-	    		act_band->sicadata->trans[y][x]=act_band->loop->stmts[s]->trans->val[y+rowoffset+addrowoffset][x+coloffset];
+	    		act_band->sicadata->trans[y][x]=act_band->loop->stmts[s]->trans->val[y+addrowoffset][x+coloffset];
 	   	    }
    	    }
-
+    	//sica_print_matrix_with_coloffset(act_band->sicadata->trans, act_band->sicadata->transwidth,act_band->sicadata->transwidth, 0);
     	// [SICA] invert it
     	sica_inverse(act_band->sicadata->trans, act_band->sicadata->trans_inverted, act_band->sicadata->transwidth);
+    	//sica_print_matrix_with_coloffset(act_band->sicadata->trans_inverted, act_band->sicadata->transwidth,act_band->sicadata->transwidth, 0);
+
       }
     }
 	// [SICA] STOP extract the transformation matrices before prevectorize

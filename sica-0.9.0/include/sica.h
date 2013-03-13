@@ -48,6 +48,8 @@ struct sica_data{
 								 *                         =
 								 * double |---- ----|---- ----|---- ----|---- ----|
 								 */
+
+    int coloffset;
 };
 typedef struct sica_data SICAData;
 

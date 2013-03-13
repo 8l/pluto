@@ -20,7 +20,7 @@ void print_all_cache_information()
     printf("[SICA] L3-CACHE: \t\t%i KByte\t%i-way associative\t%i Byte cachelinesize\n", get_hardware_cache_infos(L3CACHE_SIZE), get_hardware_cache_infos(L3CACHE_ASSO), get_hardware_cache_infos(L3CACHE_LINE));
 }
 
-void print_l1cache_hierarchie(int regsize, int l1cachesize)
+void print_l1cache_hierarchy(int regsize, int l1cachesize)
 {
     printf("[SICA] Optimization for the following elements:\n\n");
     printf("                %s CORE\n",id2cpu(get_hardware_cache_infos(CPU_ID)));
@@ -34,7 +34,7 @@ void print_l1cache_hierarchie(int regsize, int l1cachesize)
     printf("               ------------ \n");
 }
 
-void print_addl2cache_hierarchie(int l2cachesize)
+void print_addl2cache_hierarchy(int l2cachesize)
 {
         printf("                    |\n");
         printf("             ----------------- \n");

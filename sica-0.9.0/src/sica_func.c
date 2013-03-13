@@ -189,10 +189,10 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 		    	IF_DEBUG2(pluto_matrix_print(stdout, act_band->loop->stmts[s]->reads[r]->mat););
 
 		    	//get the access matrix offset caused by tiling dimensions
-		    	int access_offset=act_band->sicadata->transwidth;
-		    	if(options->l2tile)    {
-		    		access_offset=2*act_band->sicadata->transwidth;
-		    	}
+		    	//int access_offset=act_band->sicadata->transwidth;
+		    	//NEW
+		    	int access_offset=act_band->sicadata->coloffset;
+		    	printf("[SICA] ACCESS OFFSET: %i\n", access_offset);
 
 		    	//get the access matrix
 		    	IF_DEBUG2(printf("[SICA] READ-ACCESS-MATRIX:\n"););
@@ -355,10 +355,10 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 		    	IF_DEBUG2(pluto_matrix_print(stdout, act_band->loop->stmts[s]->writes[w]->mat););
 
 		    	//get the access matrix offset caused by tiling dimensions
-		    	int access_offset=act_band->sicadata->transwidth;
-		    	if(options->l2tile)    {
-		    		access_offset=2*act_band->sicadata->transwidth;
-		    	}
+		    	//int access_offset=act_band->sicadata->transwidth;
+		    	//NEW
+		    	int access_offset=act_band->sicadata->coloffset;
+		    	printf("[SICA] ACCESS OFFSET: %i\n", access_offset);
 
 		    	//get the access matrix
 		    	IF_DEBUG2(printf("[SICA] WRITE-ACCESS-MATRIX:\n"););

@@ -170,11 +170,11 @@ void sica_tile(PlutoProg *prog)
     sica_hardware->l2cachesize = get_hardware_cache_infos(L2CACHE_SIZE);
     sica_hardware->ratio=1.0;
 
-    print_l1cache_hierarchie(sica_hardware->regsize, sica_hardware->l1cachesize);
+    print_l1cache_hierarchy(sica_hardware->regsize, sica_hardware->l1cachesize);
 
     if(options->l2tile)
     {
-        print_addl2cache_hierarchie(sica_hardware->l2cachesize);
+        print_addl2cache_hierarchy(sica_hardware->l2cachesize);
     }
     printf("\n");
 
@@ -228,6 +228,7 @@ void sica_tile(PlutoProg *prog)
     pluto_detect_transformation_properties(prog);
 
     /* [SICA] get the transformation matrices BEFORE prevector transformation */
+    pluto_transformations_pretty_print(prog);
     sica_get_trans_matrix(bands, nbands);
 
     if (options->prevector) {
