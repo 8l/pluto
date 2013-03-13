@@ -32,7 +32,7 @@ struct sica_data{
 
     int **trans;				//pointer to transformation matrices for each statement in this band, trans[s]->mat[][]
     int **trans_inverted;		//inverted transformation matrix
-    int transwidth;				//width of the quadratic transformation matrix TODO: is it always quadratic
+    int *transwidth;			//width of the quadratic transformation matrix TODO: is it always quadratic
 
     int vec_accesses;			//number of counted (different) accesses by the vectorized loop in this band
     int innermost_vec_accesses;	//number of counted (different) INNERMOST accesses by the vectorized loop in this band

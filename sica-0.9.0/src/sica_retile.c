@@ -54,7 +54,7 @@ void sica_retile_band(PlutoProg *prog, Band *band, int *tile_sizes, int offset)
                 int col_offset = (widthD+1)*offset;
 
                 printf("IS: width=%i\n", widthD);
-                printf("S%i act_band->sicadata->transwidth=%i\n", s+1, band->sicadata->transwidth);
+                printf("S%i act_band->sicadata->transwidth[s]=%i\n", s+1, band->sicadata->transwidth[s]);
 
                 printf("%i-%i+%i+%i,%i+%i-%i)\n", (stmt->domain->nrows-1),(2*(depth-firstD)),row_offset,2*skipped_scalar_dims,depth-firstD,col_offset,skipped_scalar_dims);
 

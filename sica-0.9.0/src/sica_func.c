@@ -53,7 +53,7 @@ int i, s;
         	bands[i]->sicadata->upperboundoffset[s]=-1;
         }
         bands[i]->sicadata->nb_arrays=0;
-        bands[i]->sicadata->transwidth=0;
+//        bands[i]->sicadata->transwidth=0;
         bands[i]->sicadata->vec_accesses=0;
         bands[i]->sicadata->innermost_vec_accesses=0;
         bands[i]->sicadata->bytes_per_vecit=0;
@@ -172,11 +172,11 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 
 	    	// [SICA] Print the extracted transformation matrix
 	    	IF_DEBUG(printf("[SICA] Transformation matrix:\n"););
-	    	IF_DEBUG(sica_print_matrix_with_coloffset(act_band->sicadata->trans, act_band->sicadata->transwidth, act_band->sicadata->transwidth, 0););
+	    	IF_DEBUG(sica_print_matrix_with_coloffset(act_band->sicadata->trans, act_band->sicadata->transwidth[s], act_band->sicadata->transwidth[s], 0););
 
 	    	// [SICA] Print the inverted transformation matrix
 	    	IF_DEBUG(printf("[SICA] Inverted Transformation matrix:\n"););
-	    	IF_DEBUG(sica_print_matrix_with_coloffset(act_band->sicadata->trans_inverted, act_band->sicadata->transwidth, act_band->sicadata->transwidth, 0););
+	    	IF_DEBUG(sica_print_matrix_with_coloffset(act_band->sicadata->trans_inverted, act_band->sicadata->transwidth[s], act_band->sicadata->transwidth[s], 0););
 
 
 
@@ -189,14 +189,14 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 		    	IF_DEBUG2(pluto_matrix_print(stdout, act_band->loop->stmts[s]->reads[r]->mat););
 
 		    	//get the access matrix offset caused by tiling dimensions
-		    	//int access_offset=act_band->sicadata->transwidth;
+		    	//int access_offset=act_band->sicadata->transwidth[s];
 		    	//NEW
 		    	int access_offset=act_band->sicadata->coloffset;
 		    	printf("[SICA] ACCESS OFFSET: %i\n", access_offset);
 
 		    	//get the access matrix
 		    	IF_DEBUG2(printf("[SICA] READ-ACCESS-MATRIX:\n"););
-		    	IF_DEBUG2(sica_print_matrix_with_coloffset(act_band->loop->stmts[s]->reads[r]->mat->val, act_band->loop->stmts[s]->reads[r]->mat->alloc_nrows, act_band->sicadata->transwidth, access_offset););
+		    	IF_DEBUG2(sica_print_matrix_with_coloffset(act_band->loop->stmts[s]->reads[r]->mat->val, act_band->loop->stmts[s]->reads[r]->mat->alloc_nrows, act_band->sicadata->transwidth[s], access_offset););
 
 		    	//go through all dimensions of this access and transform them
 		    	int** orig_access_mat;
@@ -211,8 +211,8 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 		    		trans_access_mat[y]=(int*)malloc(act_band->loop->stmts[s]->reads[r]->mat->alloc_ncols*sizeof(int));
 		    	}
 
-		    	int orig_access_iterators[act_band->sicadata->transwidth];
-		    	int trans_access_iterators[act_band->sicadata->transwidth];
+		    	int orig_access_iterators[act_band->sicadata->transwidth[s]];
+		    	int trans_access_iterators[act_band->sicadata->transwidth[s]];
 
 		    	//fill the two access and row arrays
 		    	for(y=0;y<act_band->loop->stmts[s]->reads[r]->mat->alloc_nrows;y++)    {
@@ -222,28 +222,28 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 			    		trans_access_mat[y][x] = act_band->loop->stmts[s]->reads[r]->mat->val[y][x]; //after transformation overwrite the trans part
 			    	}
 
-			    	for(x=0;x<act_band->sicadata->transwidth;x++)    {
+			    	for(x=0;x<act_band->sicadata->transwidth[s];x++)    {
 			    		orig_access_iterators[x] = act_band->loop->stmts[s]->reads[r]->mat->val[y][access_offset+x];
 			    		trans_access_iterators[x] = 0;
 				    	}
 
-		    		sica_vec_times_matrix(trans_access_iterators,orig_access_iterators,act_band->sicadata->trans_inverted,act_band->sicadata->transwidth,act_band->sicadata->transwidth);
+		    		sica_vec_times_matrix(trans_access_iterators,orig_access_iterators,act_band->sicadata->trans_inverted,act_band->sicadata->transwidth[s],act_band->sicadata->transwidth[s]);
 
 			    	//print the two access arrays
 		    		//printf("ORIG-ACCESS:\t");
-		    		//for(y=0;y<act_band->sicadata->transwidth;y++)    {
+		    		//for(y=0;y<act_band->sicadata->transwidth[s];y++)    {
 				    //		printf("%i ", orig_access[y]);
 				    //	}
 		    		//printf("\n");
                     //
 		    		//printf("TRANS-ACCESS:\t");
-		    		//for(y=0;y<act_band->sicadata->transwidth;y++)    {
+		    		//for(y=0;y<act_band->sicadata->transwidth[s];y++)    {
 				    //		printf("%i ", trans_access[y]);
 				    //	}
 		    		///printf("\n");
 
 			    	//overwrite the transformed parts in the trans_row
-			    	for(x=0;x<act_band->sicadata->transwidth;x++)    {
+			    	for(x=0;x<act_band->sicadata->transwidth[s];x++)    {
 			    		trans_access_mat[y][access_offset+x] = trans_access_iterators[x];
 			    	}
 		    	}
@@ -355,14 +355,14 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 		    	IF_DEBUG2(pluto_matrix_print(stdout, act_band->loop->stmts[s]->writes[w]->mat););
 
 		    	//get the access matrix offset caused by tiling dimensions
-		    	//int access_offset=act_band->sicadata->transwidth;
+		    	//int access_offset=act_band->sicadata->transwidth[s];
 		    	//NEW
 		    	int access_offset=act_band->sicadata->coloffset;
 		    	printf("[SICA] ACCESS OFFSET: %i\n", access_offset);
 
 		    	//get the access matrix
 		    	IF_DEBUG2(printf("[SICA] WRITE-ACCESS-MATRIX:\n"););
-		    	IF_DEBUG2(sica_print_matrix_with_coloffset(act_band->loop->stmts[s]->writes[w]->mat->val, act_band->loop->stmts[s]->writes[w]->mat->alloc_nrows, act_band->sicadata->transwidth, access_offset););
+		    	IF_DEBUG2(sica_print_matrix_with_coloffset(act_band->loop->stmts[s]->writes[w]->mat->val, act_band->loop->stmts[s]->writes[w]->mat->alloc_nrows, act_band->sicadata->transwidth[s], access_offset););
 
 		    	//go through all dimensions of this access and transform them
 		    	int** orig_access_mat;
@@ -377,8 +377,8 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 		    		trans_access_mat[y]=(int*)malloc(act_band->loop->stmts[s]->writes[w]->mat->alloc_ncols*sizeof(int));
 		    	}
 
-		    	int orig_access_iterators[act_band->sicadata->transwidth];
-		    	int trans_access_iterators[act_band->sicadata->transwidth];
+		    	int orig_access_iterators[act_band->sicadata->transwidth[s]];
+		    	int trans_access_iterators[act_band->sicadata->transwidth[s]];
 
 		    	//fill the two access and row arrays
 		    	for(y=0;y<act_band->loop->stmts[s]->writes[w]->mat->alloc_nrows;y++)    {
@@ -388,28 +388,28 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 			    		trans_access_mat[y][x] = act_band->loop->stmts[s]->writes[w]->mat->val[y][x]; //after transformation overwrite the trans part
 			    	}
 
-			    	for(x=0;x<act_band->sicadata->transwidth;x++)    {
+			    	for(x=0;x<act_band->sicadata->transwidth[s];x++)    {
 			    		orig_access_iterators[x] = act_band->loop->stmts[s]->writes[w]->mat->val[y][access_offset+x];
 			    		trans_access_iterators[x] = 0;
 				    	}
 
-		    		sica_vec_times_matrix(trans_access_iterators,orig_access_iterators,act_band->sicadata->trans_inverted,act_band->sicadata->transwidth,act_band->sicadata->transwidth);
+		    		sica_vec_times_matrix(trans_access_iterators,orig_access_iterators,act_band->sicadata->trans_inverted,act_band->sicadata->transwidth[s],act_band->sicadata->transwidth[s]);
 
 			    	//print the two access arrays
 		    		//printf("ORIG-ACCESS:\t");
-		    		//for(y=0;y<act_band->sicadata->transwidth;y++)    {
+		    		//for(y=0;y<act_band->sicadata->transwidth[s];y++)    {
 				    //		printf("%i ", orig_access[y]);
 				    //	}
 		    		//printf("\n");
                     //
 		    		//printf("TRANS-ACCESS:\t");
-		    		//for(y=0;y<act_band->sicadata->transwidth;y++)    {
+		    		//for(y=0;y<act_band->sicadata->transwidth[s];y++)    {
 				    //		printf("%i ", trans_access[y]);
 				    //	}
 		    		///printf("\n");
 
 			    	//overwrite the transformed parts in the trans_row
-			    	for(x=0;x<act_band->sicadata->transwidth;x++)    {
+			    	for(x=0;x<act_band->sicadata->transwidth[s];x++)    {
 			    		trans_access_mat[y][access_offset+x] = trans_access_iterators[x];
 			    	}
 		    	}
