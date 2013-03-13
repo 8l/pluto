@@ -172,11 +172,11 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 
 	    	// [SICA] Print the extracted transformation matrix
 	    	IF_DEBUG(printf("[SICA] Transformation matrix:\n"););
-	    	IF_DEBUG(sica_print_matrix_with_coloffset(act_band->sicadata->trans, act_band->sicadata->transwidth[s], act_band->sicadata->transwidth[s], 0););
+	    	IF_DEBUG(sica_print_matrix_with_coloffset(act_band->sicadata->trans[s]->val, act_band->sicadata->transwidth[s], act_band->sicadata->transwidth[s], 0););
 
 	    	// [SICA] Print the inverted transformation matrix
 	    	IF_DEBUG(printf("[SICA] Inverted Transformation matrix:\n"););
-	    	IF_DEBUG(sica_print_matrix_with_coloffset(act_band->sicadata->trans_inverted, act_band->sicadata->transwidth[s], act_band->sicadata->transwidth[s], 0););
+	    	IF_DEBUG(sica_print_matrix_with_coloffset(act_band->sicadata->trans_inverted[s]->val, act_band->sicadata->transwidth[s], act_band->sicadata->transwidth[s], 0););
 
 
 
@@ -191,7 +191,7 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 		    	//get the access matrix offset caused by tiling dimensions
 		    	//int access_offset=act_band->sicadata->transwidth[s];
 		    	//NEW
-		    	int access_offset=act_band->sicadata->coloffset;
+		    	int access_offset=act_band->sicadata->coloffset[s];
 		    	printf("[SICA] ACCESS OFFSET: %i\n", access_offset);
 
 		    	//get the access matrix
@@ -227,7 +227,7 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 			    		trans_access_iterators[x] = 0;
 				    	}
 
-		    		sica_vec_times_matrix(trans_access_iterators,orig_access_iterators,act_band->sicadata->trans_inverted,act_band->sicadata->transwidth[s],act_band->sicadata->transwidth[s]);
+		    		sica_vec_times_matrix(trans_access_iterators,orig_access_iterators,act_band->sicadata->trans_inverted[s]->val,act_band->sicadata->transwidth[s],act_band->sicadata->transwidth[s]);
 
 			    	//print the two access arrays
 		    		//printf("ORIG-ACCESS:\t");
@@ -357,7 +357,7 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 		    	//get the access matrix offset caused by tiling dimensions
 		    	//int access_offset=act_band->sicadata->transwidth[s];
 		    	//NEW
-		    	int access_offset=act_band->sicadata->coloffset;
+		    	int access_offset=act_band->sicadata->coloffset[s];
 		    	printf("[SICA] ACCESS OFFSET: %i\n", access_offset);
 
 		    	//get the access matrix
@@ -393,7 +393,7 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 			    		trans_access_iterators[x] = 0;
 				    	}
 
-		    		sica_vec_times_matrix(trans_access_iterators,orig_access_iterators,act_band->sicadata->trans_inverted,act_band->sicadata->transwidth[s],act_band->sicadata->transwidth[s]);
+		    		sica_vec_times_matrix(trans_access_iterators,orig_access_iterators,act_band->sicadata->trans_inverted[s]->val,act_band->sicadata->transwidth[s],act_band->sicadata->transwidth[s]);
 
 			    	//print the two access arrays
 		    		//printf("ORIG-ACCESS:\t");
