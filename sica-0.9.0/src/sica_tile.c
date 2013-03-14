@@ -253,6 +253,8 @@ void sica_tile(PlutoProg *prog)
 
     	Band* act_band=bands[i];
 
+printf("[SICA] tiling band %i\n",i);
+
     	sica_get_band_specific_tile_sizes(act_band);
 
     	if(act_band->sicadata->isvec)    {
@@ -288,7 +290,10 @@ void sica_tile(PlutoProg *prog)
     if (options->parallel) {
         create_tile_schedule(prog, bands, nbands);
     }
-    
+
+    /* [SICA] free the SICAData memory on each band */
+    sica_free_sicadata(bands, nbands);
+
     pluto_bands_free(bands, nbands);
 }
 

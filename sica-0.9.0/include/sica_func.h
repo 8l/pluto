@@ -15,6 +15,8 @@
 
 void sica_malloc_and_init_sicadata(Band **bands, int nbands);
 
+void sica_free_sicadata(Band **bands, int nbands);
+
 void sica_get_band_specific_tile_sizes(Band* act_band);
 
 void sica_print_matrix_with_coloffset(int** matrix, int rows, int cols, int coloffset);

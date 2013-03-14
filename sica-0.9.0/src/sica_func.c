@@ -19,6 +19,7 @@
 
 #include "sica_accesses.h"
 #include "sica_func.h"
+#include "sica.h"
 
 int sica_get_bytes_of_type(char *data_type)    {
 
@@ -53,11 +54,58 @@ int i, s;
         	bands[i]->sicadata->upperboundoffset[s]=-1;
         }
         bands[i]->sicadata->nb_arrays=0;
-//        bands[i]->sicadata->transwidth=0;
         bands[i]->sicadata->vec_accesses=0;
         bands[i]->sicadata->innermost_vec_accesses=0;
         bands[i]->sicadata->bytes_per_vecit=0;
         bands[i]->sicadata->largest_data_type=0;
+
+      //malloc the transwidths arrays and tranformation matrices
+      bands[i]->sicadata->transwidth=(int*)malloc(bands[i]->loop->nstmts*sizeof(int)); //sizes for each statement
+        for(s=0;s<bands[i]->loop->nstmts;s++)    {
+        	bands[i]->sicadata->transwidth[s]=-1;
+        }
+      bands[i]->sicadata->trans=(SICAMatrix**)malloc(bands[i]->loop->nstmts*sizeof(SICAMatrix*)); //matrix for each statement
+      bands[i]->sicadata->trans_inverted=(SICAMatrix**)malloc(bands[i]->loop->nstmts*sizeof(SICAMatrix*)); //matrix for each statement
+
+      bands[i]->sicadata->coloffset=(int*)malloc(bands[i]->loop->nstmts*sizeof(int));
+        for(s=0;s<bands[i]->loop->nstmts;s++)    {
+        	bands[i]->sicadata->coloffset[s]=-1;
+        }
+    }
+}
+
+
+void sica_free_sicadata(Band **bands, int nbands)    {
+int i, s, x;
+printf("TADA1\n");
+    for (i=0; i<nbands; i++) {
+        free(bands[i]->sicadata->upperboundoffset);
+printf("TADA2\n");
+
+        for(s=0;s<bands[i]->loop->nstmts;s++)    {
+    		for(x=0; x < bands[i]->sicadata->transwidth[s]; x++)    {
+    				free(bands[i]->sicadata->trans[s]->val[x]);
+    		}
+printf("TADA4\n");
+    		free(bands[i]->sicadata->trans[s]->val);
+        	//free(bands[i]->sicadata->trans[s]);
+printf("TADA5\n");
+    		for(x=0; x < bands[i]->sicadata->transwidth[s]; x++)    {
+    			free(bands[i]->sicadata->trans_inverted[s]->val[x]);
+    		}
+    		free(bands[i]->sicadata->trans_inverted[s]->val);
+       	 	//free(bands[i]->sicadata->trans_inverted[s]);
+printf("TADA6\n");
+	}
+      free(bands[i]->sicadata->trans); //matrix for each statement
+      free(bands[i]->sicadata->trans_inverted); //matrix for each statement
+printf("TADA7\n");
+      free(bands[i]->sicadata->transwidth); 
+printf("TADA8\n");
+
+      free(bands[i]->sicadata->coloffset); 
+
+      free(bands[i]->sicadata);
     }
 }
 
@@ -191,6 +239,7 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 		    	//get the access matrix offset caused by tiling dimensions
 		    	//int access_offset=act_band->sicadata->transwidth[s];
 		    	//NEW
+printf("\t\t\t Reading column offset for statement %i in band ? to value %i\n", s, act_band->sicadata->coloffset[s]);
 		    	int access_offset=act_band->sicadata->coloffset[s];
 		    	printf("[SICA] ACCESS OFFSET: %i\n", access_offset);
 
@@ -341,6 +390,15 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 		    	} else {
 		    		IF_DEBUG(printf("[SICA] The Access on Array '%s' is NO array access!\n", act_band->loop->stmts[s]->reads[r]->name););
 		    	}
+
+		    	//free the transformed mat
+		    	for(y=0; y<act_band->loop->stmts[s]->reads[r]->mat->alloc_nrows; y++)    {
+		    		free(orig_access_mat[y]);
+		    		free(trans_access_mat[y]);
+		    	}
+
+	    		free(orig_access_mat);
+	    		free(trans_access_mat);
 
 		    }
 		    //->STOP READ ANALYSIS
@@ -508,6 +566,16 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 		    	} else {
 		    		IF_DEBUG(printf("[SICA] The Access on Array '%s' is NO array access!\n", act_band->loop->stmts[s]->writes[w]->name););
 		    	}
+
+		    	//free the transformed mat
+		    	for(y=0; y<act_band->loop->stmts[s]->writes[w]->mat->alloc_nrows; y++)    {
+		    		free(orig_access_mat[y]);
+		    		free(trans_access_mat[y]);
+		    	}
+
+	    		free(orig_access_mat);
+	    		free(trans_access_mat);
+
 
 		    }
 	    	//->STOP WRITE ANALYSIS
