@@ -35,8 +35,8 @@ struct sica_data{
     char **id2arrayname; 		//array that stores the names of all arrays to specify a unique id for each
     int nb_arrays;
 
-    SICAMatrix **trans;				//pointer to transformation matrices for each statement in this band, trans[s]->mat[][]
-    SICAMatrix **trans_inverted;		//inverted transformation matrix
+    SICAMatrix *trans;				//pointer to transformation matrices for each statement in this band, trans[s]->mat[][]
+    SICAMatrix *trans_inverted;		//inverted transformation matrix
     int *transwidth;			//width of the quadratic transformation matrix TODO: is it always quadratic
 
     int vec_accesses;			//number of counted (different) accesses by the vectorized loop in this band

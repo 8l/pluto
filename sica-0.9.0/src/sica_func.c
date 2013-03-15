@@ -41,7 +41,7 @@ int sica_get_bytes_of_type(char *data_type)    {
 
 
 void sica_malloc_and_init_sicadata(Band **bands, int nbands)    {
-int i, s;
+int i, s, x;
     for (i=0; i<nbands; i++) {
         bands[i]->sicadata=(SICAData*)malloc(sizeof(SICAData));
         bands[i]->sicadata->isvec=-1;
@@ -62,15 +62,33 @@ int i, s;
       //malloc the transwidths arrays and tranformation matrices
       bands[i]->sicadata->transwidth=(int*)malloc(bands[i]->loop->nstmts*sizeof(int)); //sizes for each statement
         for(s=0;s<bands[i]->loop->nstmts;s++)    {
-        	bands[i]->sicadata->transwidth[s]=-1;
+        	bands[i]->sicadata->transwidth[s]=bands[i]->loop->stmts[s]->dim_orig;
+       	 printf("[SICA] transwidth for band %i and stmt %i: %i\n", i, s, bands[i]->sicadata->transwidth[s]);
         }
-      bands[i]->sicadata->trans=(SICAMatrix**)malloc(bands[i]->loop->nstmts*sizeof(SICAMatrix*)); //matrix for each statement
-      bands[i]->sicadata->trans_inverted=(SICAMatrix**)malloc(bands[i]->loop->nstmts*sizeof(SICAMatrix*)); //matrix for each statement
 
-      bands[i]->sicadata->coloffset=(int*)malloc(bands[i]->loop->nstmts*sizeof(int));
-        for(s=0;s<bands[i]->loop->nstmts;s++)    {
-        	bands[i]->sicadata->coloffset[s]=-1;
-        }
+       bands[i]->sicadata->coloffset=(int*)malloc(bands[i]->loop->nstmts*sizeof(int));
+         for(s=0;s<bands[i]->loop->nstmts;s++)    {
+        	 bands[i]->sicadata->coloffset[s]=-1;//(bands[i]->loop->stmts[s]->dim - bands[i]->loop->stmts[s]->dim_orig);
+        	 //printf("[SICA] coloffset for band %i and stmt %i: %i\n", i, s, bands[i]->sicadata->coloffset[s]);
+         }
+
+     	////malloc the sicadata->trans matrices and fill it
+
+      bands[i]->sicadata->trans=(SICAMatrix*)malloc(bands[i]->loop->nstmts*sizeof(SICAMatrix)); //matrix for each statement
+      bands[i]->sicadata->trans_inverted=(SICAMatrix*)malloc(bands[i]->loop->nstmts*sizeof(SICAMatrix)); //matrix for each statement
+
+      for(s=0;s<bands[i]->loop->nstmts;s++)    {
+		printf("\t\t\tallocate trans matrices of size %i on statement %i in band %i\n", bands[i]->sicadata->transwidth[s], s, i);
+		bands[i]->sicadata->trans[s].val=(int**)malloc(bands[i]->sicadata->transwidth[s]*sizeof(int*));
+    	for(x=0; x < bands[i]->sicadata->transwidth[s]; x++)    {
+    		bands[i]->sicadata->trans[s].val[x]=(int*)malloc(bands[i]->sicadata->transwidth[s]*sizeof(int));
+    	}
+
+    	bands[i]->sicadata->trans_inverted[s].val=(int**)malloc(bands[i]->sicadata->transwidth[s]*sizeof(int*));
+    	for(x=0; x < bands[i]->sicadata->transwidth[s]; x++)    {
+    		bands[i]->sicadata->trans_inverted[s].val[x]=(int*)malloc(bands[i]->sicadata->transwidth[s]*sizeof(int));
+    	}
+      }
     }
 }
 
@@ -84,16 +102,16 @@ printf("TADA2\n");
 
         for(s=0;s<bands[i]->loop->nstmts;s++)    {
     		for(x=0; x < bands[i]->sicadata->transwidth[s]; x++)    {
-    				free(bands[i]->sicadata->trans[s]->val[x]);
+    				free(bands[i]->sicadata->trans[s].val[x]);
     		}
 printf("TADA4\n");
-    		free(bands[i]->sicadata->trans[s]->val);
+    		free(bands[i]->sicadata->trans[s].val);
         	//free(bands[i]->sicadata->trans[s]);
 printf("TADA5\n");
     		for(x=0; x < bands[i]->sicadata->transwidth[s]; x++)    {
-    			free(bands[i]->sicadata->trans_inverted[s]->val[x]);
+    			free(bands[i]->sicadata->trans_inverted[s].val[x]);
     		}
-    		free(bands[i]->sicadata->trans_inverted[s]->val);
+    		free(bands[i]->sicadata->trans_inverted[s].val);
        	 	//free(bands[i]->sicadata->trans_inverted[s]);
 printf("TADA6\n");
 	}
@@ -115,7 +133,7 @@ printf("TADA8\n");
 
 void sica_get_band_specific_tile_sizes(Band* act_band)    {
 
-	int a,s,t,r,w,x,y,i;
+	int a,s,t,r,w,x,y;//,i;
 		///////////////////////////////////////////////
 	    //TEST THE NEW SICA
 
@@ -209,8 +227,8 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 		}
 
 
-		IF_DEBUG(printf("[SICA] bands[%i], width=%i\n", i, act_band->width););
-		IF_DEBUG(printf("[SICA] bands[%i], nstmts=%i\n", i, act_band->loop->nstmts););
+		//IF_DEBUG(printf("[SICA] bands[%i], width=%i\n", i, act_band->width););
+		//IF_DEBUG(printf("[SICA] bands[%i], nstmts=%i\n", i, act_band->loop->nstmts););
 
 	    for(s=0; s<act_band->loop->nstmts;s++)
 	    {
@@ -220,11 +238,11 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 
 	    	// [SICA] Print the extracted transformation matrix
 	    	IF_DEBUG(printf("[SICA] Transformation matrix:\n"););
-	    	IF_DEBUG(sica_print_matrix_with_coloffset(act_band->sicadata->trans[s]->val, act_band->sicadata->transwidth[s], act_band->sicadata->transwidth[s], 0););
+	    	IF_DEBUG(sica_print_matrix_with_coloffset(act_band->sicadata->trans[s].val, act_band->sicadata->transwidth[s], act_band->sicadata->transwidth[s], 0););
 
 	    	// [SICA] Print the inverted transformation matrix
 	    	IF_DEBUG(printf("[SICA] Inverted Transformation matrix:\n"););
-	    	IF_DEBUG(sica_print_matrix_with_coloffset(act_band->sicadata->trans_inverted[s]->val, act_band->sicadata->transwidth[s], act_band->sicadata->transwidth[s], 0););
+	    	IF_DEBUG(sica_print_matrix_with_coloffset(act_band->sicadata->trans_inverted[s].val, act_band->sicadata->transwidth[s], act_band->sicadata->transwidth[s], 0););
 
 
 
@@ -239,7 +257,7 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 		    	//get the access matrix offset caused by tiling dimensions
 		    	//int access_offset=act_band->sicadata->transwidth[s];
 		    	//NEW
-printf("\t\t\t Reading column offset for statement %i in band ? to value %i\n", s, act_band->sicadata->coloffset[s]);
+//printf("\t\t\t Reading column offset for statement %i in band ? to value %i\n", s, act_band->sicadata->coloffset[s]);
 		    	int access_offset=act_band->sicadata->coloffset[s];
 		    	printf("[SICA] ACCESS OFFSET: %i\n", access_offset);
 
@@ -276,7 +294,7 @@ printf("\t\t\t Reading column offset for statement %i in band ? to value %i\n", 
 			    		trans_access_iterators[x] = 0;
 				    	}
 
-		    		sica_vec_times_matrix(trans_access_iterators,orig_access_iterators,act_band->sicadata->trans_inverted[s]->val,act_band->sicadata->transwidth[s],act_band->sicadata->transwidth[s]);
+		    		sica_vec_times_matrix(trans_access_iterators,orig_access_iterators,act_band->sicadata->trans_inverted[s].val,act_band->sicadata->transwidth[s],act_band->sicadata->transwidth[s]);
 
 			    	//print the two access arrays
 		    		//printf("ORIG-ACCESS:\t");
@@ -451,7 +469,7 @@ printf("\t\t\t Reading column offset for statement %i in band ? to value %i\n", 
 			    		trans_access_iterators[x] = 0;
 				    	}
 
-		    		sica_vec_times_matrix(trans_access_iterators,orig_access_iterators,act_band->sicadata->trans_inverted[s]->val,act_band->sicadata->transwidth[s],act_band->sicadata->transwidth[s]);
+		    		sica_vec_times_matrix(trans_access_iterators,orig_access_iterators,act_band->sicadata->trans_inverted[s].val,act_band->sicadata->transwidth[s],act_band->sicadata->transwidth[s]);
 
 			    	//print the two access arrays
 		    		//printf("ORIG-ACCESS:\t");
@@ -544,7 +562,7 @@ printf("\t\t\t Reading column offset for statement %i in band ? to value %i\n", 
 								if(act_band->loop->stmts[s]->writes[w]->symbol->data_type)    {
 								IF_DEBUG(printf("[SICA] THIS ACCESS IS OF TYPE '%s'!\n", act_band->loop->stmts[s]->writes[w]->symbol->data_type););
 								//COUNT the bytes that have to be loaded for this access
-								int new_bytes=sica_get_bytes_of_type(act_band->loop->stmts[s]->writes[w]->symbol->data_type);
+								new_bytes=sica_get_bytes_of_type(act_band->loop->stmts[s]->writes[w]->symbol->data_type);
 								} else {
 									printf("[SICA] WARNING: The datatype of an array was not recognized and therefore set to a DEFAULT VALUE: %i Bytes!\n", SICA_DEFAULT_DATA_BYTES);
 									new_bytes=SICA_DEFAULT_DATA_BYTES;

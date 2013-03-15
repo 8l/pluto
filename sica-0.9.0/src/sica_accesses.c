@@ -19,6 +19,7 @@
 
 #include "sica_accesses.h"
 #include "sica_math_func.h"
+#include "sica_func.h"
 
 int** sica_access_matrix_malloc(int rows, int cols)
 {
@@ -154,14 +155,16 @@ void sica_get_trans_matrix(Band** bands, int nbands)    {
 
       for(s=0; s<act_band->loop->nstmts;s++)    {
     	//calculation the column offset -> TODO: SCALAR DIMENSIONS ARE MISSING, TAKE THE TRANSFORMATION FROM PROG???
-        int firstD = act_band->loop->depth;
-        int lastD = act_band->loop->depth+act_band->width-1;
-        int widthD=lastD-firstD; //=act_band->width
+        //int firstD = act_band->loop->depth;
+        //int lastD = act_band->loop->depth+act_band->width-1;
+        //int widthD=lastD-firstD; //=act_band->width
 
         //act_band->sicadata->transwidth[s]=widthD+1;
         //TODO: WRONG NEW TRY, this dimension should fit for the transformation
-        act_band->sicadata->transwidth[s]=act_band->loop->stmts[s]->dim_orig;
-        printf("HERE: Setting transwidth on band %i for statement %i to value %i\n", i, s, act_band->loop->stmts[s]->dim_orig);
+
+//        act_band->sicadata->transwidth[s]=act_band->loop->stmts[s]->dim_orig; //<- NOW DONE IN INIT
+
+//        printf("HERE: Setting transwidth on band %i for statement %i to value %i\n", i, s, act_band->loop->stmts[s]->dim_orig);
         //printf("[SICA] widthD+1=%i, transwidth[s]=%i, dim=%i, dim_orig=%i\n[SICA] number of tiled dimensions from original pluto tile step: %i\n", widthD+1, act_band->sicadata->transwidth[s], act_band->loop->stmts[s]->dim, act_band->loop->stmts[s]->dim_orig, act_band->width);
 
         IF_DEBUG2(printf("[SICA] (not parameter or scalar dimension related) columns in the transformation matrix: stmt->dim + 1 = %i\n", act_band->loop->stmts[s]->dim);                               );
@@ -169,8 +172,10 @@ void sica_get_trans_matrix(Band** bands, int nbands)    {
 
         //act_band->sicadata->tilewidth=act_band->width;
 
-printf("\t\t\t Setting column offset for statement %i in band %i to value %i, old value: %i\n", s, i, act_band->loop->stmts[s]->dim - act_band->loop->stmts[s]->dim_orig, act_band->sicadata->coloffset[s]);
-        act_band->sicadata->coloffset[s]=act_band->loop->stmts[s]->dim - act_band->loop->stmts[s]->dim_orig; //tile dimensionality is already in this calculation!
+//printf("\t\t\t Setting column offset for statement %i in band %i to value %i, old value: %i\n", s, i, act_band->loop->stmts[s]->dim - act_band->loop->stmts[s]->dim_orig, act_band->sicadata->coloffset[s]);
+
+        act_band->sicadata->coloffset[s]=(act_band->loop->stmts[s]->dim - act_band->loop->stmts[s]->dim_orig); //tile dimensionality is already in this calculation! //<- NOW DONE IN INIT
+
 //        if(options->l2tile)    {
 //        	act_band->sicadata->coloffset=2*(act_band->sicadata->coloffset);//act_band->sicadata->transwidth[s];
 //        }
@@ -179,26 +184,27 @@ printf("\t\t\t Setting column offset for statement %i in band %i to value %i, ol
 
         //int rowoffset=coloffset; //not necessary anymore cause all non-trans lines are skipped
 
-    	IF_DEBUG2(printf("[SICA] column offset: %i\n", coloffset););
+    	//IF_DEBUG2(printf("[SICA] column offset: %i\n", coloffset););
     	//IF_DEBUG2(printf("[SICA] row offset: %i\n\n", rowoffset););
 
-    	////malloc the sicadata->trans matrices and fill it
-printf("\t\t\tallocate trans matrix of size %i on statement %i\n", act_band->sicadata->transwidth[s], s);
-    	act_band->sicadata->trans[s]->val=(int**)malloc(act_band->sicadata->transwidth[s]*sizeof(int*));
-    	for(x=0; x < act_band->sicadata->transwidth[s]; x++)    {
-    		act_band->sicadata->trans[s]->val[x]=(int*)malloc(act_band->sicadata->transwidth[s]*sizeof(int));
-    	}
-printf("HERE!\n");
-
-    	act_band->sicadata->trans_inverted[s]->val=(int**)malloc(act_band->sicadata->transwidth[s]*sizeof(int*));
-    	for(x=0; x < act_band->sicadata->transwidth[s]; x++)    {
-    		act_band->sicadata->trans_inverted[s]->val[x]=(int*)malloc(act_band->sicadata->transwidth[s]*sizeof(int));
-    	}
-
+//<-NOW DONE IN INIT
+//    	////malloc the sicadata->trans matrices and fill it
+//printf("\t\t\tallocate trans matrix of size %i on statement %i\n", act_band->sicadata->transwidth[s], s);
+//    	act_band->sicadata->trans[s]->val=(int**)malloc(act_band->sicadata->transwidth[s]*sizeof(int*));
+//    	for(x=0; x < act_band->sicadata->transwidth[s]; x++)    {
+//    		act_band->sicadata->trans[s]->val[x]=(int*)malloc(act_band->sicadata->transwidth[s]*sizeof(int));
+//    	}
+//printf("HERE!\n");
+//printf("11DBG7-%i: %i, transwidth=%i\n",s, bands[0]->sicadata->coloffset[0], bands[0]->sicadata->transwidth[0]);
+//    	act_band->sicadata->trans_inverted[s]->val=(int**)malloc(act_band->sicadata->transwidth[s]*sizeof(int*));
+//    	for(x=0; x < act_band->sicadata->transwidth[s]; x++)    {
+//    		act_band->sicadata->trans_inverted[s]->val[x]=(int*)malloc(act_band->sicadata->transwidth[s]*sizeof(int));
+//    	}
+//printf("11DBG7-%i: %i, transwidth=%i\n",s, bands[0]->sicadata->coloffset[0], bands[0]->sicadata->transwidth[0]);
 
     	//printf("[SICA] Tile statement %i with dim_orig %i\n", s+1, act_band->loop->stmts[s]->dim_orig);
 
-    	//fill it
+		//fill it
     	int addrowoffset=0;
     	for(y=0; y < act_band->sicadata->transwidth[s]; y++)    {
     		/* if the row is a scalar dimension or a zero row, skip it (so if it looks like this (0,0,...,0,?))
@@ -222,18 +228,16 @@ printf("HERE!\n");
         		}
 
     		}
-        	printf("HERE\n");
+
 	   	    for(x=0; x < act_band->sicadata->transwidth[s]; x++)    {
-	    		act_band->sicadata->trans[s]->val[y][x]=act_band->loop->stmts[s]->trans->val[y+addrowoffset][x+coloffset];
+	    		act_band->sicadata->trans[s].val[y][x]=act_band->loop->stmts[s]->trans->val[y+addrowoffset][x+coloffset];
 	   	    }
-        	printf("HERE\n");
+
    	    }
-    	sica_print_matrix_with_coloffset(act_band->sicadata->trans[s]->val, act_band->sicadata->transwidth[s],act_band->sicadata->transwidth[s], 0);
+    	sica_print_matrix_with_coloffset(act_band->sicadata->trans[s].val, act_band->sicadata->transwidth[s],act_band->sicadata->transwidth[s], 0);
     	// [SICA] invert it
-    	printf("AND HERE1 S%i %p %p %i\n",s,act_band->sicadata->trans[s]->val, act_band->sicadata->trans_inverted[s]->val, act_band->sicadata->transwidth[s]);
-    	sica_inverse(act_band->sicadata->trans[s]->val, act_band->sicadata->trans_inverted[s]->val, act_band->sicadata->transwidth[s]);
-    	sica_print_matrix_with_coloffset(act_band->sicadata->trans_inverted[s]->val, act_band->sicadata->transwidth[s],act_band->sicadata->transwidth[s], 0);
-    	printf("AND HERE2\n");
+    	sica_inverse(act_band->sicadata->trans[s].val, act_band->sicadata->trans_inverted[s].val, act_band->sicadata->transwidth[s]);
+    	sica_print_matrix_with_coloffset(act_band->sicadata->trans_inverted[s].val, act_band->sicadata->transwidth[s],act_band->sicadata->transwidth[s], 0);
       }
     }
 	// [SICA] STOP extract the transformation matrices before prevectorize

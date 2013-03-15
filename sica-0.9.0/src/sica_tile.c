@@ -96,6 +96,7 @@ void sica_tile_band(PlutoProg *prog, Band *band, int *tile_sizes)
                 /* [SICA] store the upper bound offset for the retiling (as this value can be changed in the intermediate steps) */
                 /* [SICA] ToDo: Check wheather it is OK not to distinguish between L1 and L2 tiling but just taking the last (overwritten) value */ 
                 band->sicadata->upperboundoffset[s]=-stmt->trans->val[(depth-firstD)+1+depth][stmt->dim+prog->npar];
+                printf("Setting upper bound offset to %i\n", band->sicadata->upperboundoffset[s]);
 
                 PlutoConstraints *ub = pluto_constraints_select_row(stmt->domain,
                         stmt->domain->nrows-1);
@@ -188,7 +189,6 @@ void sica_tile(PlutoProg *prog)
     /* [SICA] allocate and initialize the SICAData memory on each band */
     sica_malloc_and_init_sicadata(bands, nbands);
     
-
     /* Now, we are ready to tile */
     if (options->lt >= 0 && options->ft >= 0)   {
         /* User option specified tiling */
@@ -229,6 +229,7 @@ void sica_tile(PlutoProg *prog)
 
     /* [SICA] get the transformation matrices BEFORE prevector transformation */
     pluto_transformations_pretty_print(prog);
+
     sica_get_trans_matrix(bands, nbands);
 
     if (options->prevector) {
@@ -243,17 +244,16 @@ void sica_tile(PlutoProg *prog)
             pluto_transformations_pretty_print(prog);
         }
     }
-    
+
     /* [SICA] set the bands either to be vectorized or not */
     sica_set_vectorized_bands(bands, nbands);
-    
-    /* [SICA] calculate the band specific tile quantities */
 
+    /* [SICA] calculate the band specific tile quantities */
     for (i=0; i<nbands; i++) {
 
     	Band* act_band=bands[i];
 
-printf("[SICA] tiling band %i\n",i);
+		printf("[SICA] tiling band %i\n",i);
 
     	sica_get_band_specific_tile_sizes(act_band);
 
@@ -278,13 +278,13 @@ printf("[SICA] tiling band %i\n",i);
     		}
     	}
     }
-    
+
     /* [SICA] Modify the tile sizes by SICA approach START */
     sica_retile_scattering_dims(prog, bands, nbands, 0); /* L1 tiling */
     if (options->l2tile)    {
         sica_retile_scattering_dims(prog, bands, nbands, 1); /* L2 tiling */
     }
-    
+
     /* [SICA] Free the SICAData memory */
 
     if (options->parallel) {
@@ -292,7 +292,7 @@ printf("[SICA] tiling band %i\n",i);
     }
 
     /* [SICA] free the SICAData memory on each band */
-    sica_free_sicadata(bands, nbands);
+    //sica_free_sicadata(bands, nbands);
 
     pluto_bands_free(bands, nbands);
 }

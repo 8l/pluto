@@ -50,23 +50,31 @@ void sica_retile_band(PlutoProg *prog, Band *band, int *tile_sizes, int offset)
                 assert(tile_sizes[depth-firstD] >= 1);
                 
                 /* add offset on l1 tiling if l2 tiling will be performed */
-                int row_offset = -2*(widthD+1)*offset;
-                int col_offset = (widthD+1)*offset;
+                int row_offset = -2*band->sicadata->transwidth[s]*offset;//-2*(widthD+1)*offset;
+                int col_offset = band->sicadata->transwidth[s]*offset;//(widthD+1)*offset;
 
-                printf("IS: width=%i\n", widthD);
-                printf("S%i act_band->sicadata->transwidth[s]=%i\n", s+1, band->sicadata->transwidth[s]);
+                printf("DBG: row_offset=%i\n", row_offset);
+                printf("DBG: col_offset=%i\n", col_offset);
 
-                printf("%i-%i+%i+%i,%i+%i-%i)\n", (stmt->domain->nrows-1),(2*(depth-firstD)),row_offset,2*skipped_scalar_dims,depth-firstD,col_offset,skipped_scalar_dims);
+//                printf("IS: width=%i\n", widthD);
+//                printf("S%i act_band->sicadata->transwidth[s]=%i\n", s+1, band->sicadata->transwidth[s]);
 
-                printf("%i, %i\n", (stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset+2*skipped_scalar_dims,depth-firstD+col_offset-skipped_scalar_dims);
+//                printf("%i-%i+%i+%i,%i+%i-%i)\n", (stmt->domain->nrows-1),(2*(depth-firstD)),row_offset,2*skipped_scalar_dims,depth-firstD,col_offset,skipped_scalar_dims);
+
+//                printf("%i, %i\n", (stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset+2*skipped_scalar_dims,depth-firstD+col_offset-skipped_scalar_dims);
                 /* [SICA] ERROR CHECK if there is a value that should be resetted and was zero before */
                 if((stmt->domain->val[(stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset+2*skipped_scalar_dims][depth-firstD+col_offset-skipped_scalar_dims])==0||(stmt->domain->val[(stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset+2*skipped_scalar_dims][stmt->domain->ncols-1])==0||(stmt->domain->val[(stmt->domain->nrows-1)-(2*(depth-firstD))-1+row_offset+2*skipped_scalar_dims][depth-firstD+col_offset-skipped_scalar_dims])==0)    {
                 	printf("[SICA] ERROR in S%i: there is something going wrong in the retiling step with the original values!\n", s+1);
+                	printf("(%i,%i)=%i",(stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset+2*skipped_scalar_dims,stmt->domain->ncols-1,stmt->domain->val[(stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset+2*skipped_scalar_dims][stmt->domain->ncols-1]);
+                	printf("(nrows-1=%i)-(act_rel_row=%i)+(row_offset=%i)+2*(scalar_skipped=%i)\n",stmt->domain->nrows-1,(2*(depth-firstD)),row_offset,skipped_scalar_dims);
+                	printf("pos=%i + col_offset=%i - skipped_scalar=%i\n",depth-firstD,col_offset,skipped_scalar_dims);
                 }
 
                 /* [SICA] ERROR CHECK if there is a value that should be taken for reset and was zero before */
-                if(tile_sizes[widthD-(depth-firstD)]==0||(band->sicadata->upperboundoffset[s]+tile_sizes[widthD-(depth-firstD)])==0)    {
+                if(tile_sizes[widthD-(depth-firstD)]<=0)    {
+                	printf("[SICA] ERROR in S%i: coordinates (%i,%i)\n", s+1, (stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset+2*skipped_scalar_dims, depth-firstD+col_offset-skipped_scalar_dims);
                 	printf("[SICA] ERROR in S%i: there is something going wrong in the retiling step with the new tile values!\n", s+1);
+                	printf("[SICA] ERROR in S%i: tile_sizes[%i]=%i, band->sicadata->upperboundoffset[%i]=%i\n", s+1, widthD-(depth-firstD),tile_sizes[widthD-(depth-firstD)],s,band->sicadata->upperboundoffset[s]);
                 }
                                 
                 /* upper bound of the tile-loop  X * tx + Y >= 0 (the relating outer tile-loop is stored in column depth+vecrow for l1 and depth+vecrow for l2) */
