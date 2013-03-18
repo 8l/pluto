@@ -55,6 +55,10 @@ void sica_tile_band(PlutoProg *prog, Band *band, int *tile_sizes)
             int num_domain_supernodes = 0;
             if (hyp_type != H_SCALAR) {
                 assert(tile_sizes[depth-firstD] >= 1);
+		
+		/* [SICA] count the really tiled dimensions */
+		band->sicadata->tilewidth[s]++;
+
                 /* Domain supernodes aren't added for scalar dimensions */
                 // printf("S%d dim: %d %d\n", stmt->id+1, stmt->dim, depth-firstD);
                 pluto_stmt_add_dim(stmt, num_domain_supernodes, depth, iter, hyp_type, prog);

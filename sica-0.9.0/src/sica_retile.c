@@ -37,75 +37,121 @@ void sica_retile_band(PlutoProg *prog, Band *band, int *tile_sizes, int offset)
     
     for (s=0; s<band->loop->nstmts; s++) {
     	int skipped_scalar_dims=0;
-        for (depth=firstD; depth<=lastD; depth++)    {
-            Stmt *stmt = band->loop->stmts[s];
-            
-            int hyp_type = (stmt->hyp_types[depth + depth - firstD] == H_SCALAR)? H_SCALAR: 
-                H_TILE_SPACE_LOOP;
 
-            // pluto_constraints_print(stdout, stmt->domain);
-            IF_DEBUG2(printf("[SICA] before re-tiling\n");            );
-            IF_DEBUG2(pluto_constraints_print(stdout, stmt->domain);  );
-            if (hyp_type != H_SCALAR) {
-                assert(tile_sizes[depth-firstD] >= 1);
-                
-                /* add offset on l1 tiling if l2 tiling will be performed */
-                int row_offset = -2*band->sicadata->transwidth[s]*offset;//-2*(widthD+1)*offset;
-                int col_offset = band->sicadata->transwidth[s]*offset;//(widthD+1)*offset;
+        int sica_dimensions2tile=band->sicadata->tilewidth[s];
+    	if(options->l2tile)    {
+        	sica_dimensions2tile=(band->sicadata->tilewidth[s])/2;
+    	}
 
-                printf("DBG: row_offset=%i\n", row_offset);
-                printf("DBG: col_offset=%i\n", col_offset);
+	/* [SICA] NEW APPROACH */
+	Stmt *stmt = band->loop->stmts[s];
 
-//                printf("IS: width=%i\n", widthD);
-//                printf("S%i act_band->sicadata->transwidth[s]=%i\n", s+1, band->sicadata->transwidth[s]);
+		int row_offset = -2*sica_dimensions2tile*offset;
+		int col_offset = sica_dimensions2tile*offset;
 
-//                printf("%i-%i+%i+%i,%i+%i-%i)\n", (stmt->domain->nrows-1),(2*(depth-firstD)),row_offset,2*skipped_scalar_dims,depth-firstD,col_offset,skipped_scalar_dims);
+            printf("[SICA] before re-tiling\n");            
+           pluto_constraints_print(stdout, stmt->domain);  
 
-//                printf("%i, %i\n", (stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset+2*skipped_scalar_dims,depth-firstD+col_offset-skipped_scalar_dims);
-                /* [SICA] ERROR CHECK if there is a value that should be resetted and was zero before */
-                if((stmt->domain->val[(stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset+2*skipped_scalar_dims][depth-firstD+col_offset-skipped_scalar_dims])==0||(stmt->domain->val[(stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset+2*skipped_scalar_dims][stmt->domain->ncols-1])==0||(stmt->domain->val[(stmt->domain->nrows-1)-(2*(depth-firstD))-1+row_offset+2*skipped_scalar_dims][depth-firstD+col_offset-skipped_scalar_dims])==0)    {
-                	printf("[SICA] ERROR in S%i: there is something going wrong in the retiling step with the original values!\n", s+1);
-                	printf("(%i,%i)=%i",(stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset+2*skipped_scalar_dims,stmt->domain->ncols-1,stmt->domain->val[(stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset+2*skipped_scalar_dims][stmt->domain->ncols-1]);
-                	printf("(nrows-1=%i)-(act_rel_row=%i)+(row_offset=%i)+2*(scalar_skipped=%i)\n",stmt->domain->nrows-1,(2*(depth-firstD)),row_offset,skipped_scalar_dims);
-                	printf("pos=%i + col_offset=%i - skipped_scalar=%i\n",depth-firstD,col_offset,skipped_scalar_dims);
-                }
+int dim;
+for(dim=0;dim<sica_dimensions2tile;dim++)    {
+printf("dim: %i, line: %i\n", dim, sica_dimensions2tile-dim);
 
-                /* [SICA] ERROR CHECK if there is a value that should be taken for reset and was zero before */
-                if(tile_sizes[widthD-(depth-firstD)]<=0)    {
-                	printf("[SICA] ERROR in S%i: coordinates (%i,%i)\n", s+1, (stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset+2*skipped_scalar_dims, depth-firstD+col_offset-skipped_scalar_dims);
-                	printf("[SICA] ERROR in S%i: there is something going wrong in the retiling step with the new tile values!\n", s+1);
-                	printf("[SICA] ERROR in S%i: tile_sizes[%i]=%i, band->sicadata->upperboundoffset[%i]=%i\n", s+1, widthD-(depth-firstD),tile_sizes[widthD-(depth-firstD)],s,band->sicadata->upperboundoffset[s]);
-                }
-                                
+printf("(%i,%i) orig: %i, new: %i\n",(stmt->domain->nrows-1)-(2*dim)+row_offset,dim+col_offset, stmt->domain->val[(stmt->domain->nrows-1)-(2*dim)+row_offset][dim+col_offset],tile_sizes[sica_dimensions2tile-dim-1]);
+printf("(%i,%i) orig: %i, new: %i\n",(stmt->domain->nrows-1)-(2*dim)+row_offset,stmt->domain->ncols-1,stmt->domain->val[(stmt->domain->nrows-1)-(2*dim)+row_offset][stmt->domain->ncols-1], band->sicadata->upperboundoffset[s]+tile_sizes[sica_dimensions2tile-dim-1]-1);
+printf("(%i,%i) orig: %i, new: %i\n",(stmt->domain->nrows-1)-(2*dim)-1+row_offset,dim+col_offset,stmt->domain->val[(stmt->domain->nrows-1)-(2*dim)-1+row_offset][dim+col_offset],-tile_sizes[sica_dimensions2tile-dim-1]);
                 /* upper bound of the tile-loop  X * tx + Y >= 0 (the relating outer tile-loop is stored in column depth+vecrow for l1 and depth+vecrow for l2) */
                 /* X */
-                IF_DEBUG2(printf("[SICA] Accessing line %i\n",(stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset); );
-                stmt->domain->val[(stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset+2*skipped_scalar_dims][depth-firstD+col_offset-skipped_scalar_dims] = tile_sizes[widthD-(depth-firstD)];
+                IF_DEBUG2(printf("[SICA] Accessing line %i\n",(stmt->domain->nrows-1)-(2*sica_dimensions2tile)+row_offset); );
+                stmt->domain->val[(stmt->domain->nrows-1)-(2*dim)+row_offset][dim+col_offset] = tile_sizes[sica_dimensions2tile-dim-1];
                 /* Y */
                 /* ToDo: is it correct that in stmt->trans->val there is NO OFFSET?!? LIKE THAT IT WORKS -> figure out the relation between trans element and domain value */
-                stmt->domain->val[(stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset+2*skipped_scalar_dims][stmt->domain->ncols-1] = band->sicadata->upperboundoffset[s]+tile_sizes[widthD-(depth-firstD)]-1;
+                stmt->domain->val[(stmt->domain->nrows-1)-(2*dim)+row_offset][stmt->domain->ncols-1] = band->sicadata->upperboundoffset[s]+tile_sizes[sica_dimensions2tile-dim-1]-1;
                 //IF_DEBUG(printf("[SICA] Statement %i -> Backuped upper bound offset: %i, current offset would be %i\n", s, band->sicadata->upperboundoffset[s], -stmt->trans->val[(depth-firstD)+1+depth][stmt->dim+prog->npar]););
 
                 /* lower bound of the tile-loop  X * tx >= 0 (the relating outer tile-loop is stored in column depth+vecrow for l1 and depth+vecrow for l2) */
                 /* X */
-                stmt->domain->val[(stmt->domain->nrows-1)-(2*(depth-firstD))-1+row_offset+2*skipped_scalar_dims][depth-firstD+col_offset-skipped_scalar_dims] = -tile_sizes[widthD-(depth-firstD)];
-                
-                //IF_DEBUG(printf("\n[SICA] MODIFIED: [%i,%i] with tile_sizes[%i]=%i\n", (stmt->domain->nrows-1)-(2*(depth-firstD)), depth-firstD, widthD-(depth-firstD), tile_sizes[widthD-(depth-firstD)]);          );
-                //IF_DEBUG(printf("[SICA] MODIFIED: [%i,%i] with tile_sizes[%i]=%i\n", (stmt->domain->nrows-1)-(2*(depth-firstD))-1, depth-firstD, widthD-(depth-firstD), tile_sizes[widthD-(depth-firstD)]);          );
-                //IF_DEBUG(printf("[SICA] MODIFIED: [%i,%i] with tile_sizes[%i]=%i\n", (stmt->domain->nrows-1)-(2*(depth-firstD))-1, stmt->domain->ncols-1, widthD-(depth-firstD), tile_sizes[widthD-(depth-firstD)]); );
-                
-                // printf("Stmt %d: depth: %d\n", stmt->id+1,depth);
-                // pluto_matrix_print(stdout, stmt->trans);
+                stmt->domain->val[(stmt->domain->nrows-1)-(2*dim)-1+row_offset][dim+col_offset] = -tile_sizes[sica_dimensions2tile-dim-1];
+}
+            printf("[SICA] after re-tiling\n");            
+           pluto_constraints_print(stdout, stmt->domain);  
 
-            } else {
-            	IF_DEBUG2(printf("[SICA] SKIPPED LINE %i\n", depth + depth - firstD); );
-            	skipped_scalar_dims++;
-            }
-            IF_DEBUG2(printf("[SICA] SKIPPED_SCALAR_DIMS=%i\n",skipped_scalar_dims); );
+
+	/* [SICA] OLD APPROACH */
+//        for (depth=firstD; depth<=lastD; depth++)    {
+//           Stmt *stmt = band->loop->stmts[s];
+//            
+//            int hyp_type = (stmt->hyp_types[depth + depth - firstD] == H_SCALAR)? H_SCALAR: 
+//                H_TILE_SPACE_LOOP;
+//
+//            // pluto_constraints_print(stdout, stmt->domain);
+//            IF_DEBUG2(printf("[SICA] before re-tiling\n");            );
+////            IF_DEBUG2(pluto_constraints_print(stdout, stmt->domain);  );
+//           if (hyp_type != H_SCALAR) {
+//               assert(tile_sizes[depth-firstD] >= 1);
+//               /* add offset on l1 tiling if l2 tiling will be performed */
+//               int row_offset = -2*sica_dimensions2tile*offset;//-2*(widthD+1)*offset;
+//               int col_offset = sica_dimensions2tile*offset;//(widthD+1)*offset;
+//
+//                //printf("DBG: row_offset=%i\n", row_offset);
+//                //printf("DBG: col_offset=%i\n", col_offset);
+//
+////                printf("IS: width=%i\n", widthD);
+////                printf("S%i act_band->sicadata->transwidth[s]=%i\n", s+1, band->sicadata->transwidth[s]);
+//
+////                printf("%i-%i+%i+%i,%i+%i-%i)\n", (stmt->domain->nrows-1),(2*(depth-firstD)),row_offset,2*skipped_scalar_dims,depth-firstD,col_offset,skipped_scalar_dims);
+//
+////                printf("%i, %i\n", (stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset+2*skipped_scalar_dims,depth-firstD+col_offset-skipped_scalar_dims);
+//                /* [SICA] ERROR CHECK if there is a value that should be resetted and was zero before */
+//
+//		/* [SICA] checkif this dimension was simply tiled to one before or if any error occurs */
+//		if((stmt->domain->val[(stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset+2*skipped_scalar_dims][depth-firstD+col_offset-skipped_scalar_dims] == 1)&&(stmt->domain->val[(stmt->domain->nrows-1)-(2*(depth-firstD))-1+row_offset+2*skipped_scalar_dims][depth-firstD+col_offset-skipped_scalar_dims] == -1)&&(stmt->domain->val[(stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset+2*skipped_scalar_dims][stmt->domain->ncols-1] == 0))    {
+//			printf("[SICA] WARNING: There is a tile dimension that was previously tiled with tile-size '1'\n");
+//		} else {
+//
+//               	if((stmt->domain->val[(stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset+2*skipped_scalar_dims][depth-firstD+col_offset-skipped_scalar_dims])==0||(stmt->domain->val[(stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset+2*skipped_scalar_dims][stmt->domain->ncols-1])==0||(stmt->domain->val[(stmt->domain->nrows-1)-(2*(depth-firstD))-1+row_offset+2*skipped_scalar_dims][depth-firstD+col_offset-skipped_scalar_dims])==0)    {
+//                		printf("[SICA] ERROR in S%i: there is something going wrong in the retiling step with the original values!\n", s+1);
+//                		printf("(%i,%i)=%i",(stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset+2*skipped_scalar_dims,stmt->domain->ncols-1,stmt->domain->val[(stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset+2*skipped_scalar_dims][stmt->domain->ncols-1]);
+//               		printf("(nrows-1=%i)-(act_rel_row=%i)+(row_offset=%i)+2*(scalar_skipped=%i)\n",stmt->domain->nrows-1,(2*(depth-firstD)),row_offset,skipped_scalar_dims);
+//                		printf("pos=%i + col_offset=%i - skipped_scalar=%i\n",depth-firstD,col_offset,skipped_scalar_dims);
+//                	}
+//	
+//                	/* [SICA] ERROR CHECK if there is a value that should be taken for reset and was zero before */
+//                	if(tile_sizes[widthD-(depth-firstD)]<=0)    {
+//                		printf("[SICA] ERROR in S%i: coordinates (%i,%i)\n", s+1, (stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset+2*skipped_scalar_dims, depth-firstD+col_offset-skipped_scalar_dims);
+//                		printf("[SICA] ERROR in S%i: there is something going wrong in the retiling step with the new tile values!\n", s+1);
+//                		printf("[SICA] ERROR in S%i: tile_sizes[%i]=%i, band->sicadata->upperboundoffset[%i]=%i\n", s+1, widthD-(depth-firstD),tile_sizes[widthD-(depth-firstD)],s,band->sicadata->upperboundoffset[s]);
+//                	}
+//		}
+//                                
+//                /* upper bound of the tile-loop  X * tx + Y >= 0 (the relating outer tile-loop is stored in column depth+vecrow for l1 and depth+vecrow for l2) */
+//                /* X */
+//                IF_DEBUG2(printf("[SICA] Accessing line %i\n",(stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset); );
+//                stmt->domain->val[(stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset+2*skipped_scalar_dims][depth-firstD+col_offset-skipped_scalar_dims] = tile_sizes[widthD-(depth-firstD)];
+//                /* Y */
+//                /* ToDo: is it correct that in stmt->trans->val there is NO OFFSET?!? LIKE THAT IT WORKS -> figure out the relation between trans element and domain value */
+//                stmt->domain->val[(stmt->domain->nrows-1)-(2*(depth-firstD))+row_offset+2*skipped_scalar_dims][stmt->domain->ncols-1] = band->sicadata->upperboundoffset[s]+tile_sizes[widthD-(depth-firstD)]-1;
+//                //IF_DEBUG(printf("[SICA] Statement %i -> Backuped upper bound offset: %i, current offset would be %i\n", s, band->sicadata->upperboundoffset[s], -stmt->trans->val[(depth-firstD)+1+depth][stmt->dim+prog->npar]););
+//
+//                /* lower bound of the tile-loop  X * tx >= 0 (the relating outer tile-loop is stored in column depth+vecrow for l1 and depth+vecrow for l2) */
+//                /* X */
+//                stmt->domain->val[(stmt->domain->nrows-1)-(2*(depth-firstD))-1+row_offset+2*skipped_scalar_dims][depth-firstD+col_offset-skipped_scalar_dims] = -tile_sizes[widthD-(depth-firstD)];
+//               
+//                //IF_DEBUG(printf("\n[SICA] MODIFIED: [%i,%i] with tile_sizes[%i]=%i\n", (stmt->domain->nrows-1)-(2*(depth-firstD)), depth-firstD, widthD-(depth-firstD), tile_sizes[widthD-(depth-firstD)]);          );
+//                //IF_DEBUG(printf("[SICA] MODIFIED: [%i,%i] with tile_sizes[%i]=%i\n", (stmt->domain->nrows-1)-(2*(depth-firstD))-1, depth-firstD, widthD-(depth-firstD), tile_sizes[widthD-(depth-firstD)]);          );
+//                //IF_DEBUG(printf("[SICA] MODIFIED: [%i,%i] with tile_sizes[%i]=%i\n", (stmt->domain->nrows-1)-(2*(depth-firstD))-1, stmt->domain->ncols-1, widthD-(depth-firstD), tile_sizes[widthD-(depth-firstD)]); );
+//                
+//                // printf("Stmt %d: depth: %d\n", stmt->id+1,depth);
+//                // pluto_matrix_print(stdout, stmt->trans);
+//
+//            } else {
+//            	IF_DEBUG2(printf("[SICA] SKIPPED LINE %i\n", depth + depth - firstD); );
+//           	//skipped_scalar_dims++;
+//            }
+//            IF_DEBUG2(printf("[SICA] SKIPPED_SCALAR_DIMS=%i\n",skipped_scalar_dims); );
             IF_DEBUG2(printf("[SICA] after re-tiling\n");            );
             IF_DEBUG2(pluto_constraints_print(stdout, stmt->domain); );
         } /* all statements */
-    } /* all scats to be tiled */
+//    } /* all scats to be tiled */
 
     /* Re-detect hyperplane types (H_SCALAR, H_LOOP) */
     pluto_detect_hyperplane_types(prog);

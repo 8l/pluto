@@ -39,6 +39,8 @@ struct sica_data{
     SICAMatrix *trans_inverted;		//inverted transformation matrix
     int *transwidth;			//width of the quadratic transformation matrix TODO: is it always quadratic
 
+    int *tilewidth;			//number of tiled dimensions sometimes != stms->num_tiled_loops (because of scalar dims);
+
     int vec_accesses;			//number of counted (different) accesses by the vectorized loop in this band
     int innermost_vec_accesses;	//number of counted (different) INNERMOST accesses by the vectorized loop in this band
     int bytes_per_vecit;		//number of bytes that have to be loaded per iteration of the vectorized loop within this band

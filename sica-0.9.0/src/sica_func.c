@@ -59,12 +59,18 @@ int i, s, x;
         bands[i]->sicadata->bytes_per_vecit=0;
         bands[i]->sicadata->largest_data_type=0;
 
-      //malloc the transwidths arrays and tranformation matrices
+      //malloc the transwidths, coloffset, tilewidth arrays and tranformation matrices
       bands[i]->sicadata->transwidth=(int*)malloc(bands[i]->loop->nstmts*sizeof(int)); //sizes for each statement
         for(s=0;s<bands[i]->loop->nstmts;s++)    {
         	bands[i]->sicadata->transwidth[s]=bands[i]->loop->stmts[s]->dim_orig;
-       	 printf("[SICA] transwidth for band %i and stmt %i: %i\n", i, s, bands[i]->sicadata->transwidth[s]);
+       	 //printf("[SICA] transwidth for band %i and stmt %i: %i\n", i, s, bands[i]->sicadata->transwidth[s]);
         }
+
+       bands[i]->sicadata->tilewidth=(int*)malloc(bands[i]->loop->nstmts*sizeof(int));
+         for(s=0;s<bands[i]->loop->nstmts;s++)    {
+        	 bands[i]->sicadata->tilewidth[s]=0;//(bands[i]->loop->stmts[s]->dim - bands[i]->loop->stmts[s]->dim_orig);
+        	 //printf("[SICA] coloffset for band %i and stmt %i: %i\n", i, s, bands[i]->sicadata->coloffset[s]);
+         }
 
        bands[i]->sicadata->coloffset=(int*)malloc(bands[i]->loop->nstmts*sizeof(int));
          for(s=0;s<bands[i]->loop->nstmts;s++)    {
@@ -259,7 +265,7 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 		    	//NEW
 //printf("\t\t\t Reading column offset for statement %i in band ? to value %i\n", s, act_band->sicadata->coloffset[s]);
 		    	int access_offset=act_band->sicadata->coloffset[s];
-		    	printf("[SICA] ACCESS OFFSET: %i\n", access_offset);
+		    	IF_DEBUG2(printf("[SICA] ACCESS OFFSET: %i\n", access_offset););
 
 		    	//get the access matrix
 		    	IF_DEBUG2(printf("[SICA] READ-ACCESS-MATRIX:\n"););
@@ -297,17 +303,17 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 		    		sica_vec_times_matrix(trans_access_iterators,orig_access_iterators,act_band->sicadata->trans_inverted[s].val,act_band->sicadata->transwidth[s],act_band->sicadata->transwidth[s]);
 
 			    	//print the two access arrays
-		    		//printf("ORIG-ACCESS:\t");
-		    		//for(y=0;y<act_band->sicadata->transwidth[s];y++)    {
-				    //		printf("%i ", orig_access[y]);
-				    //	}
-		    		//printf("\n");
-                    //
-		    		//printf("TRANS-ACCESS:\t");
-		    		//for(y=0;y<act_band->sicadata->transwidth[s];y++)    {
-				    //		printf("%i ", trans_access[y]);
-				    //	}
-		    		///printf("\n");
+		    		printf("ORIG-ACCESS:\t");
+		    		for(x=0;x<act_band->sicadata->transwidth[s];x++)    {
+				    		printf("%i ", orig_access_iterators[x]);
+				    	}
+		    		printf("\n");
+                    
+		    		printf("TRANS-ACCESS:\t");
+		    		for(x=0;x<act_band->sicadata->transwidth[s];x++)    {
+				    		printf("%i ", trans_access_iterators[x]);
+				    	}
+		    		printf("\n");
 
 			    	//overwrite the transformed parts in the trans_row
 			    	for(x=0;x<act_band->sicadata->transwidth[s];x++)    {
@@ -330,6 +336,7 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 		    		IF_DEBUG(printf("[SICA] The Access on Array '%s' is an array access!\n", act_band->loop->stmts[s]->reads[r]->name););
 			    	for(y=0;y<act_band->loop->stmts[s]->reads[r]->mat->alloc_nrows;y++)    {
 
+printf("IS_VEC: %i, vecrow: %i, row_in_access_mat: %i\n",act_band->sicadata->isvec,act_band->sicadata->vecrow,access_offset+act_band->sicadata->vecrow);
 			    		//...CHECK IF there is one or more dimensions that is accessed by the vectorized loop and...
 						if(act_band->sicadata->isvec&&trans_access_mat[y][access_offset+act_band->sicadata->vecrow])    {
 							IF_DEBUG(printf("[SICA] VECTORIZATION: Array '%s' accesses dimension '%i' by a vectorized loop!\n", act_band->loop->stmts[s]->reads[r]->name, y););
