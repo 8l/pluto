@@ -23,4 +23,6 @@ void sica_print_matrix_with_coloffset(int** matrix, int rows, int cols, int colo
 
 void sica_print_array_accesses_structures(Band* act_band, SICAAccess** sica_accesses_on_array);
 
+void sica_print_fuse_structure(Band **bands, int nbands);
+
 #endif /* SICA_FUNC_H_ */

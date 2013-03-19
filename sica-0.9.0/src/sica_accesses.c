@@ -222,7 +222,14 @@ void sica_get_trans_matrix(Band** bands, int nbands)    {
 
         		if(sum==0)    {
         			IF_DEBUG2(printf("[SICA] Skipping row %i\n",y+addrowoffset););
-        			addrowoffset++;
+
+        			/* [SICA] Check this row if it contains the scalar dimension*/
+        			if(act_band->loop->stmts[s]->trans->val[y+addrowoffset][act_band->loop->stmts[s]->trans->ncols-1])    {
+        				IF_DEBUG(printf("STATEMENT %i -> SCALAR DIM: %i\n", s, act_band->loop->stmts[s]->trans->val[y+addrowoffset][act_band->loop->stmts[s]->trans->ncols-1]););
+        				act_band->sicadata->scalar_dims[s]=act_band->loop->stmts[s]->trans->val[y+addrowoffset][act_band->loop->stmts[s]->trans->ncols-1];
+        			}
+
+            		addrowoffset++;
         		} else {
         			skip=0;
         		}

@@ -59,7 +59,7 @@ int i, s, x;
         bands[i]->sicadata->bytes_per_vecit=0;
         bands[i]->sicadata->largest_data_type=0;
 
-      //malloc the transwidths, coloffset, tilewidth arrays and tranformation matrices
+      //malloc the transwidths, coloffset, scalar_dims, tilewidth arrays and tranformation matrices
       bands[i]->sicadata->transwidth=(int*)malloc(bands[i]->loop->nstmts*sizeof(int)); //sizes for each statement
         for(s=0;s<bands[i]->loop->nstmts;s++)    {
         	bands[i]->sicadata->transwidth[s]=bands[i]->loop->stmts[s]->dim_orig;
@@ -69,7 +69,7 @@ int i, s, x;
        bands[i]->sicadata->tilewidth=(int*)malloc(bands[i]->loop->nstmts*sizeof(int));
          for(s=0;s<bands[i]->loop->nstmts;s++)    {
         	 bands[i]->sicadata->tilewidth[s]=0;//(bands[i]->loop->stmts[s]->dim - bands[i]->loop->stmts[s]->dim_orig);
-        	 //printf("[SICA] coloffset for band %i and stmt %i: %i\n", i, s, bands[i]->sicadata->coloffset[s]);
+        	 //printf("[SICA] tilewidth for band %i and stmt %i: %i\n", i, s, bands[i]->sicadata->tilewidth[s]);
          }
 
        bands[i]->sicadata->coloffset=(int*)malloc(bands[i]->loop->nstmts*sizeof(int));
@@ -77,6 +77,11 @@ int i, s, x;
         	 bands[i]->sicadata->coloffset[s]=-1;//(bands[i]->loop->stmts[s]->dim - bands[i]->loop->stmts[s]->dim_orig);
         	 //printf("[SICA] coloffset for band %i and stmt %i: %i\n", i, s, bands[i]->sicadata->coloffset[s]);
          }
+
+         bands[i]->sicadata->scalar_dims=(int*)malloc(bands[i]->loop->nstmts*sizeof(int)); //sizes for each statement
+           for(s=0;s<bands[i]->loop->nstmts;s++)    {
+           	bands[i]->sicadata->scalar_dims[s]=0;
+           }
 
      	////malloc the sicadata->trans matrices and fill it
 
@@ -648,6 +653,18 @@ void sica_print_array_accesses_structures(Band* act_band, SICAAccess** sica_acce
 	}
 	printf("[SICA] \t\t%i access at all on this array in this band.\n", counter);
 }
+}
+
+void sica_print_fuse_structure(Band **bands, int nbands)    {
+int i,s;
+    for (i=0; i<nbands; i++) {
+
+    	Band* act_band=bands[i];
+    	for(s=0; s<act_band->loop->nstmts;s++)
+    	{
+    		printf("[SICA] Statement %i is in SCALAR DIM: %i\n",s,act_band->sicadata->scalar_dims[s]);
+    	}
+    }
 }
 
 

@@ -57,6 +57,8 @@ struct sica_data{
 								 */
 
     int *coloffset;
+
+    int *scalar_dims;			//array containing the scalar dimension for each statement
 };
 typedef struct sica_data SICAData;
 
