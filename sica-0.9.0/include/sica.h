@@ -26,8 +26,8 @@ struct sica_data{
     int vecloop; 				//vectorized loop t%i
     int vecrow; 				//row in tile_sizes related to vectorized loop t%i
     
-    int sical1size; 			//l1 tile size for vectorized loop
-    int sical2size; 			//l2 tile size for outermost loop
+    int* sical1size; 			//l1 tile size for vectorized loop for each statement
+    int sical2size; 			//l2 tile size for outermost loop, same for each statement as it is only hardware related
     
     int *upperboundoffset; 		//offsetarray for each statement for retiling upper bound (this depends on transformation matrix),
 								//as this is modified in the process, this backup is needed
@@ -43,9 +43,9 @@ struct sica_data{
 
     int vec_accesses;			//number of counted (different) accesses by the vectorized loop in this band
     int innermost_vec_accesses;	//number of counted (different) INNERMOST accesses by the vectorized loop in this band
-    int bytes_per_vecit;		//number of bytes that have to be loaded per iteration of the vectorized loop within this band
+    int* bytes_per_vecit;		//number of bytes that have to be loaded per iteration of the vectorized loop within this statement in this band
 
-    int largest_data_type;		/*this value is/might be interesting for mixed precision calculations because the different
+    int* largest_data_type;		/*this value is/might be interesting for mixed precision calculations because the different
 								 *SIMD registers should be seperated in pieces of this datatype in such a case
 								 * EXAMPLE: this calculation should split the float accesses also in portions of 4 to fit (instead of possible 8)
 								 *

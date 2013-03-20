@@ -18,7 +18,7 @@ struct sica_hwinfo{
 };
 typedef struct sica_hwinfo SICAHardware;
 
-int sica_get_l1size(SICAData* sicadata, SICAHardware* sicahardware);
+void sica_get_l1size(SICAData* sicadata, SICAHardware* sicahardware, int nstmts);
 
 int sica_get_l2size(SICAHardware* sicahardware);
 

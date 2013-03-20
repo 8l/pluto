@@ -17,13 +17,13 @@
 
 /* Manipulates statement domain and transformation to tile scattering 
  * dimensions from firstD to lastD */
-void sica_retile_band(PlutoProg *prog, Band *band, int *tile_sizes, int offset)
+void sica_retile_band(PlutoProg *prog, Band *band, int offset)
 {
     IF_DEBUG(      printf("[SICA] Performing ");      );
 	IF_DEBUG(if(band->sicadata->isvec){printf("VECTORIZED");}else{printf("VECTORIZED");});
     IF_DEBUG(      printf(" sica_retile_band step\n");  );
 	
-    int s;
+    int j, s;
     int depth, npar;
 
     npar = prog->npar;
@@ -36,7 +36,25 @@ void sica_retile_band(PlutoProg *prog, Band *band, int *tile_sizes, int offset)
     IF_DEBUG2(printf("\n\n[SICA] firstD=%i lastD=%i for the following transformation\n",firstD,lastD););
     
     for (s=0; s<band->loop->nstmts; s++) {
-    	int skipped_scalar_dims=0;
+
+        int tile_sizes[prog->num_hyperplanes];
+
+        /* [SICA] START SIMD-specific tile sizes */
+        for (j=0; j<prog->num_hyperplanes; j++)   {
+            tile_sizes[j] = 1;
+        }
+    	if(band->sicadata->isvec)    {/* only set real retile sizes if this loop is vectorized */
+    		if((!offset)&&(options->l2tile))    {
+            tile_sizes[0]=band->sicadata->sical2size;
+    		} else {
+            tile_sizes[band->sicadata->vecrow]=band->sicadata->sical1size[s];
+    		}
+    	}
+        /* [SICA] STOP SIMD-specific tile sizes */
+
+
+
+//    	int skipped_scalar_dims=0;
 
         int sica_dimensions2tile=band->sicadata->tilewidth[s];
     	if(options->l2tile)    {
@@ -166,31 +184,20 @@ void sica_retile_scattering_dims(PlutoProg *prog, Band **bands, int nbands, int 
 //	printf("[SICA] Performing sica_retile_scattering_dims step\n");
 	
     int i, j, b;
-    int tile_sizes[prog->num_hyperplanes];
-    int l2_tile_size_ratios[prog->num_hyperplanes];
 
     Stmt **stmts = prog->stmts;
 
+    IF_DEBUG(printf("[SICA] SICA modification for band number %i\n",b); );
+
     for (b=0; b<nbands; b++) {
-        /* [SICA] START SIMD-specific tile sizes */
-        IF_DEBUG(printf("[SICA] SICA modification for band number %i\n",b); );
-        for (j=0; j<prog->num_hyperplanes; j++)   {
-            tile_sizes[j] = 1;
-            l2_tile_size_ratios[j] = 1;
-        }
-    	if(bands[b]->sicadata->isvec)    {/* only set real retile sizes if this loop is vectorized */
-            tile_sizes[bands[b]->sicadata->vecrow]=bands[b]->sicadata->sical1size;
-            l2_tile_size_ratios[0]=bands[b]->sicadata->sical2size;
-    	}
-        /* [SICA] STOP SIMD-specific tile sizes */
     	
         if (l2) {
-            sica_retile_band(prog, bands[b], l2_tile_size_ratios, 0);
+            sica_retile_band(prog, bands[b], 0);
         }else{
         	if(!options->l2tile)    {
-            sica_retile_band(prog, bands[b], tile_sizes, 0);
+            sica_retile_band(prog, bands[b], 0);
         	}else{
-            sica_retile_band(prog, bands[b], tile_sizes, 1);
+            sica_retile_band(prog, bands[b], 1);
         	}
         }
     } /* all bands */

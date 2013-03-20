@@ -47,7 +47,6 @@ int i, s, x;
         bands[i]->sicadata->isvec=-1;
         bands[i]->sicadata->vecloop=-1;
         bands[i]->sicadata->vecrow=-1;
-        bands[i]->sicadata->sical1size=-1;
         bands[i]->sicadata->sical2size=-1;
         bands[i]->sicadata->upperboundoffset=(int*)malloc((bands[i]->loop->nstmts)*sizeof(int));
         for(s=0;s<bands[i]->loop->nstmts;s++)    {
@@ -59,7 +58,25 @@ int i, s, x;
         bands[i]->sicadata->bytes_per_vecit=0;
         bands[i]->sicadata->largest_data_type=0;
 
-      //malloc the transwidths, coloffset, scalar_dims, tilewidth arrays and tranformation matrices
+      //malloc the sical1size, transwidths, coloffset, scalar_dims, tilewidth arrays and tranformation matrices
+      bands[i]->sicadata->bytes_per_vecit=(int*)malloc(bands[i]->loop->nstmts*sizeof(int)); //sizes for each statement
+      for(s=0;s<bands[i]->loop->nstmts;s++)    {
+          bands[i]->sicadata->bytes_per_vecit[s]=0;
+		    //printf("[SICA] bytes per vecit for band %i and stmt %i: %i\n", i, s, bands[i]->sicadata->bytes_per_vecit[s]);
+      }
+
+      bands[i]->sicadata->sical1size=(int*)malloc(bands[i]->loop->nstmts*sizeof(int)); //sizes for each statement
+        for(s=0;s<bands[i]->loop->nstmts;s++)    {
+            bands[i]->sicadata->sical1size[s]=1;
+		    //printf("[SICA] l1 tile size for band %i and stmt %i: %i\n", i, s, bands[i]->sicadata->sical1size[s]);
+        }
+
+      bands[i]->sicadata->largest_data_type=(int*)malloc(bands[i]->loop->nstmts*sizeof(int)); //sizes for each statement
+        for(s=0;s<bands[i]->loop->nstmts;s++)    {
+          bands[i]->sicadata->largest_data_type[s]=-1;
+		    //printf("[SICA] largest data type for band %i and stmt %i: %i\n", i, s, bands[i]->sicadata->largest_data_type[s]);
+        }
+
       bands[i]->sicadata->transwidth=(int*)malloc(bands[i]->loop->nstmts*sizeof(int)); //sizes for each statement
         for(s=0;s<bands[i]->loop->nstmts;s++)    {
         	bands[i]->sicadata->transwidth[s]=bands[i]->loop->stmts[s]->dim_orig;
@@ -136,6 +153,25 @@ printf("TADA8\n");
 
       free(bands[i]->sicadata);
     }
+}
+
+
+
+void sica_check_for_stmts_in_scalar_dim(int act_s, Band* act_band, SICAStmtList* sica_stmts_in_scalar_dim)    {
+	int s;
+	printf("In this band, there are the following statements besides statement '%i': ", act_s);
+    for(s=0; s<act_band->loop->nstmts;s++)    {
+    	if(act_band->sicadata->scalar_dims[s]==act_band->sicadata->scalar_dims[act_s])    {
+    		if(s!=act_s)    {
+    			printf("%i ", s);
+    	    	sica_stmts_in_scalar_dim->next=(SICAStmtList*)malloc(sizeof(SICAStmtList));
+    	    	sica_stmts_in_scalar_dim=sica_stmts_in_scalar_dim->next;
+    	    	sica_stmts_in_scalar_dim->stmt_nb=s;
+    	    	sica_stmts_in_scalar_dim->next=NULL;
+    		}
+    	}
+    }
+    printf("\n");
 }
 
 
@@ -230,19 +266,38 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 			IF_DEBUG(printf("[SICA] Array-ID: %i, name: %s\n", a, act_band->sicadata->id2arrayname[a]););
         }
 
-		// [SICA] setup the empty array of sica_accesses structures
-		SICAAccess** sica_accesses_on_array;
-		sica_accesses_on_array=(SICAAccess**)malloc(act_band->sicadata->nb_arrays*sizeof(SICAAccess*));
-		for(a=0; a<act_band->sicadata->nb_arrays; a++)    {
-			sica_accesses_on_array[a]=sica_accesses_malloc();
-		}
-
-
 		//IF_DEBUG(printf("[SICA] bands[%i], width=%i\n", i, act_band->width););
 		//IF_DEBUG(printf("[SICA] bands[%i], nstmts=%i\n", i, act_band->loop->nstmts););
 
-	    for(s=0; s<act_band->loop->nstmts;s++)
+		int s_all;
+
+	    for(s_all=0; s_all<act_band->loop->nstmts;s_all++)
 	    {
+	    	/* [SICA] got through all statements to create a tile size for each! */
+			// [SICA] setup the empty array of sica_accesses structures
+			SICAAccess** sica_accesses_on_array;
+			sica_accesses_on_array=(SICAAccess**)malloc(act_band->sicadata->nb_arrays*sizeof(SICAAccess*));
+			for(a=0; a<act_band->sicadata->nb_arrays; a++)    {
+				sica_accesses_on_array[a]=sica_accesses_malloc();
+			}
+
+	    	printf("---ANALYSING STATEMENT %i AND SCALAR DIMENSION %i!!!\n",s_all,act_band->sicadata->scalar_dims[s_all]);
+
+	    	SICAStmtList* sica_stmts_in_scalar_dim;
+	    	sica_stmts_in_scalar_dim=(SICAStmtList*)malloc(sizeof(SICAStmtList));
+	    	sica_stmts_in_scalar_dim->stmt_nb=s_all;
+	    	sica_stmts_in_scalar_dim->next=NULL;
+
+	    	//check if there are more statements in this scalar dimension
+	    	sica_check_for_stmts_in_scalar_dim(s_all,act_band,sica_stmts_in_scalar_dim);
+
+	    	s=s_all;
+
+	    	/* [SICA] Now go through all statements with the same scalar dimension within this band */
+	    	while(sica_stmts_in_scalar_dim)    {
+	    		printf("Statement %i\n", sica_stmts_in_scalar_dim->stmt_nb);
+	    		s=sica_stmts_in_scalar_dim->stmt_nb;
+
 	    	//// [SICA] print the transformation matrix
 	    	//printf("T(S%i):\n",act_band->loop->stmts[s]->id);
 			//pluto_matrix_print(stdout, act_band->loop->stmts[s]->trans);
@@ -404,11 +459,11 @@ printf("IS_VEC: %i, vecrow: %i, row_in_access_mat: %i\n",act_band->sicadata->isv
 									new_bytes=SICA_DEFAULT_DATA_BYTES;
 								}
 								//[SICA] update the largest datatype if necessary
-								if(new_bytes>act_band->sicadata->largest_data_type){
-									act_band->sicadata->largest_data_type=new_bytes;
+								if(new_bytes>act_band->sicadata->largest_data_type[s]){
+									act_band->sicadata->largest_data_type[s]=new_bytes;
 								}
 								//[SICA] add the additional bytes
-								act_band->sicadata->bytes_per_vecit+=new_bytes;
+								act_band->sicadata->bytes_per_vecit[s]+=new_bytes;
 							}
 
 						}
@@ -484,17 +539,17 @@ printf("IS_VEC: %i, vecrow: %i, row_in_access_mat: %i\n",act_band->sicadata->isv
 		    		sica_vec_times_matrix(trans_access_iterators,orig_access_iterators,act_band->sicadata->trans_inverted[s].val,act_band->sicadata->transwidth[s],act_band->sicadata->transwidth[s]);
 
 			    	//print the two access arrays
-		    		//printf("ORIG-ACCESS:\t");
-		    		//for(y=0;y<act_band->sicadata->transwidth[s];y++)    {
-				    //		printf("%i ", orig_access[y]);
-				    //	}
-		    		//printf("\n");
-                    //
-		    		//printf("TRANS-ACCESS:\t");
-		    		//for(y=0;y<act_band->sicadata->transwidth[s];y++)    {
-				    //		printf("%i ", trans_access[y]);
-				    //	}
-		    		///printf("\n");
+		    		printf("ORIG-ACCESS:\t");
+		    		for(x=0;x<act_band->sicadata->transwidth[s];x++)    {
+				    		printf("%i ", orig_access_iterators[x]);
+				    	}
+		    		printf("\n");
+
+		    		printf("TRANS-ACCESS:\t");
+		    		for(x=0;x<act_band->sicadata->transwidth[s];x++)    {
+				    		printf("%i ", trans_access_iterators[x]);
+				    	}
+		    		printf("\n");
 
 			    	//overwrite the transformed parts in the trans_row
 			    	for(x=0;x<act_band->sicadata->transwidth[s];x++)    {
@@ -580,11 +635,11 @@ printf("IS_VEC: %i, vecrow: %i, row_in_access_mat: %i\n",act_band->sicadata->isv
 									new_bytes=SICA_DEFAULT_DATA_BYTES;
 								}
 								//[SICA] update the largest datatype if necessary
-								if(new_bytes>act_band->sicadata->largest_data_type){
-									act_band->sicadata->largest_data_type=new_bytes;
+								if(new_bytes>act_band->sicadata->largest_data_type[s]){
+									act_band->sicadata->largest_data_type[s]=new_bytes;
 								}
 								//[SICA] add the additional bytes
-								act_band->sicadata->bytes_per_vecit+=new_bytes;
+								act_band->sicadata->bytes_per_vecit[s]+=new_bytes;
 							}
 
 						}
@@ -610,13 +665,15 @@ printf("IS_VEC: %i, vecrow: %i, row_in_access_mat: %i\n",act_band->sicadata->isv
 		    }
 	    	//->STOP WRITE ANALYSIS
 
+			sica_stmts_in_scalar_dim=sica_stmts_in_scalar_dim->next;
+    	}
+
+		    IF_DEBUG(printf("[SICA] There are %i accesses relevant for vectorization\n", act_band->sicadata->vec_accesses););
+
+		    IF_DEBUG(printf("[SICA] Print the accesses on arrays structure:\n"););
+		    IF_DEBUG(sica_print_array_accesses_structures(act_band, sica_accesses_on_array););
 
 	    } /* End of loop across the arrays */
-
-	    IF_DEBUG(printf("[SICA] There are %i accesses relevant for vectorization\n", act_band->sicadata->vec_accesses););
-
-	    IF_DEBUG(printf("[SICA] Print the accesses on arrays structure:\n"););
-	    IF_DEBUG(sica_print_array_accesses_structures(act_band, sica_accesses_on_array););
 	    //get the PluTo defined data types + (null)->default and calculate the tile quantities
 
 	    //NOW LOKK UP HOW MANY ACCESSES OF WHICH TYPE ARE AVAILABLE
@@ -662,7 +719,7 @@ int i,s;
     	Band* act_band=bands[i];
     	for(s=0; s<act_band->loop->nstmts;s++)
     	{
-    		printf("[SICA] Statement %i is in SCALAR DIM: %i\n",s,act_band->sicadata->scalar_dims[s]);
+    		printf("[SICA] STATEMENT %i in BAND %i is in SCALAR DIM: %i\n",s,i,act_band->sicadata->scalar_dims[s]);
     	}
     }
 }

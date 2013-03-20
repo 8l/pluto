@@ -11,6 +11,13 @@
 
 #include "pluto.h"
 
+struct sica_stmt_list{
+  int stmt_nb;
+
+  struct sica_stmt_list* next; /**< Next statement in the linked list */
+};
+typedef struct sica_stmt_list SICAStmtList;
+
 struct sica_access_matrices{
   int** access_mat; //array that stores the transformated accesses that are accessed by the vectorized dimension
   int nrows;

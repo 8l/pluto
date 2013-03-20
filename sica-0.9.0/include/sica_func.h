@@ -25,4 +25,6 @@ void sica_print_array_accesses_structures(Band* act_band, SICAAccess** sica_acce
 
 void sica_print_fuse_structure(Band **bands, int nbands);
 
+void sica_check_for_stmts_in_scalar_dim(int s, Band* act_band, SICAStmtList* sica_stmts_in_scalar_dim);
+
 #endif /* SICA_FUNC_H_ */

@@ -263,24 +263,30 @@ void sica_tile(PlutoProg *prog)
     	sica_get_band_specific_tile_sizes(act_band);
 
     	if(act_band->sicadata->isvec)    {
-    	    //printf("VEC\tbands[%i], nstmts=%i\n", i, act_band->loop->nstmts);
-    		if(act_band->sicadata->vec_accesses>0)    {
-        		IF_DEBUG(printf("[SICA] vectorized accesses in this band: %i\n", act_band->sicadata->vec_accesses););
-            	printf("[SICA] percentage of INNERMOST vectorized accesses: %.2f\n", 100.0*(float)act_band->sicadata->innermost_vec_accesses/(float)act_band->sicadata->vec_accesses);
-            	IF_DEBUG(printf("[SICA] bytes to be loaded by the vectorized accesses: %i Bytes\n", act_band->sicadata->bytes_per_vecit););
 
-    		act_band->sicadata->sical1size=sica_get_l1size(act_band->sicadata, sica_hardware); // [SICA] HERE A FUNCTION SHOULD BE CALLED THAT CALCULATES THE SICA SIZES FOR THAT BAND
-    		act_band->sicadata->sical2size=sica_get_l2size(sica_hardware);  // [SICA] HERE A FUNCTION SHOULD BE CALLED THAT CALCULATES THE GLOBAL SIZE
+    		int s;
+    	    for(s=0; s<act_band->loop->nstmts;s++)    {
+    	        //printf("VEC\tbands[%i], nstmts=%i\n", i, act_band->loop->nstmts);
+    		    if(act_band->sicadata->vec_accesses>0)    {
+        	  	    IF_DEBUG(printf("[SICA] vectorized accesses in this band: %i\n", act_band->sicadata->vec_accesses););
+            	    printf("[SICA] percentage of INNERMOST vectorized accesses: %.2f\n", 100.0*(float)act_band->sicadata->innermost_vec_accesses/(float)act_band->sicadata->vec_accesses);
+            	    IF_DEBUG(printf("[SICA] bytes to be loaded by the vectorized accesses: %i Bytes\n", act_band->sicadata->bytes_per_vecit[s]););
 
-    	    printf("[SICA] tile sizes for band %i -> Level-1: %i, Level-2: %i\n\n",i,act_band->sicadata->sical1size, act_band->sicadata->sical2size );
+    		    sica_get_l1size(act_band->sicadata, sica_hardware, act_band->loop->nstmts); // [SICA] HERE A FUNCTION SHOULD BE CALLED THAT CALCULATES THE SICA SIZES FOR THAT BAND
+    		    act_band->sicadata->sical2size=sica_get_l2size(sica_hardware);  // [SICA] HERE A FUNCTION SHOULD BE CALLED THAT CALCULATES THE GLOBAL SIZE
 
-    		} else {
-        		act_band->sicadata->sical1size=1;
-        		act_band->sicadata->sical2size=1;
+    	        printf("[SICA] tile sizes for band %i -> Level-1: %i, Level-2: %i\n\n",i,act_band->sicadata->sical1size[s], act_band->sicadata->sical2size );
 
-            	printf("[SICA] NO vectorized access\n");
-        	    printf("[SICA] tile sizes for band %i -> Level-1: %i, Level-2: %i\n\n",i,act_band->sicadata->sical1size, act_band->sicadata->sical2size );
+    		    } else {
+        		    act_band->sicadata->sical1size[s]=1;
+        		    act_band->sicadata->sical2size=1;
+
+            	    printf("[SICA] NO vectorized access\n");
+        	        printf("[SICA] tile sizes for band %i -> Level-1: %i, Level-2: %i\n\n",i,act_band->sicadata->sical1size[s], act_band->sicadata->sical2size );
+    		    }
     		}
+
+
     	}
     }
 
