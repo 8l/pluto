@@ -67,16 +67,16 @@ void sica_retile_band(PlutoProg *prog, Band *band, int offset)
 		int row_offset = -2*sica_dimensions2tile*offset;
 		int col_offset = sica_dimensions2tile*offset;
 
-            printf("[SICA] before re-tiling\n");            
-           pluto_constraints_print(stdout, stmt->domain);  
+		IF_DEBUG2(printf("[SICA] before re-tiling\n"); );
+        IF_DEBUG2(pluto_constraints_print(stdout, stmt->domain);  );
 
 int dim;
 for(dim=0;dim<sica_dimensions2tile;dim++)    {
-printf("dim: %i, line: %i\n", dim, sica_dimensions2tile-dim);
+	IF_DEBUG2(printf("dim: %i, line: %i\n", dim, sica_dimensions2tile-dim););
 
-printf("(%i,%i) orig: %i, new: %i\n",(stmt->domain->nrows-1)-(2*dim)+row_offset,dim+col_offset, stmt->domain->val[(stmt->domain->nrows-1)-(2*dim)+row_offset][dim+col_offset],tile_sizes[sica_dimensions2tile-dim-1]);
-printf("(%i,%i) orig: %i, new: %i\n",(stmt->domain->nrows-1)-(2*dim)+row_offset,stmt->domain->ncols-1,stmt->domain->val[(stmt->domain->nrows-1)-(2*dim)+row_offset][stmt->domain->ncols-1], band->sicadata->upperboundoffset[s]+tile_sizes[sica_dimensions2tile-dim-1]-1);
-printf("(%i,%i) orig: %i, new: %i\n",(stmt->domain->nrows-1)-(2*dim)-1+row_offset,dim+col_offset,stmt->domain->val[(stmt->domain->nrows-1)-(2*dim)-1+row_offset][dim+col_offset],-tile_sizes[sica_dimensions2tile-dim-1]);
+	IF_DEBUG2(printf("(%i,%i) orig: %i, new: %i\n",(stmt->domain->nrows-1)-(2*dim)+row_offset,dim+col_offset, stmt->domain->val[(stmt->domain->nrows-1)-(2*dim)+row_offset][dim+col_offset],tile_sizes[sica_dimensions2tile-dim-1]););
+	IF_DEBUG2(printf("(%i,%i) orig: %i, new: %i\n",(stmt->domain->nrows-1)-(2*dim)+row_offset,stmt->domain->ncols-1,stmt->domain->val[(stmt->domain->nrows-1)-(2*dim)+row_offset][stmt->domain->ncols-1], band->sicadata->upperboundoffset[s]+tile_sizes[sica_dimensions2tile-dim-1]-1););
+	IF_DEBUG2(printf("(%i,%i) orig: %i, new: %i\n",(stmt->domain->nrows-1)-(2*dim)-1+row_offset,dim+col_offset,stmt->domain->val[(stmt->domain->nrows-1)-(2*dim)-1+row_offset][dim+col_offset],-tile_sizes[sica_dimensions2tile-dim-1]););
                 /* upper bound of the tile-loop  X * tx + Y >= 0 (the relating outer tile-loop is stored in column depth+vecrow for l1 and depth+vecrow for l2) */
                 /* X */
                 IF_DEBUG2(printf("[SICA] Accessing line %i\n",(stmt->domain->nrows-1)-(2*sica_dimensions2tile)+row_offset); );
@@ -90,8 +90,8 @@ printf("(%i,%i) orig: %i, new: %i\n",(stmt->domain->nrows-1)-(2*dim)-1+row_offse
                 /* X */
                 stmt->domain->val[(stmt->domain->nrows-1)-(2*dim)-1+row_offset][dim+col_offset] = -tile_sizes[sica_dimensions2tile-dim-1];
 }
-            printf("[SICA] after re-tiling\n");            
-           pluto_constraints_print(stdout, stmt->domain);  
+		IF_DEBUG2(printf("[SICA] after re-tiling\n"););
+		IF_DEBUG2(pluto_constraints_print(stdout, stmt->domain););
 
 
 	/* [SICA] OLD APPROACH */
@@ -166,8 +166,6 @@ printf("(%i,%i) orig: %i, new: %i\n",(stmt->domain->nrows-1)-(2*dim)-1+row_offse
 //           	//skipped_scalar_dims++;
 //            }
 //            IF_DEBUG2(printf("[SICA] SKIPPED_SCALAR_DIMS=%i\n",skipped_scalar_dims); );
-            IF_DEBUG2(printf("[SICA] after re-tiling\n");            );
-            IF_DEBUG2(pluto_constraints_print(stdout, stmt->domain); );
         } /* all statements */
 //    } /* all scats to be tiled */
 

@@ -100,7 +100,7 @@ void sica_tile_band(PlutoProg *prog, Band *band, int *tile_sizes)
                 /* [SICA] store the upper bound offset for the retiling (as this value can be changed in the intermediate steps) */
                 /* [SICA] ToDo: Check wheather it is OK not to distinguish between L1 and L2 tiling but just taking the last (overwritten) value */ 
                 band->sicadata->upperboundoffset[s]=-stmt->trans->val[(depth-firstD)+1+depth][stmt->dim+prog->npar];
-                printf("Setting upper bound offset to %i\n", band->sicadata->upperboundoffset[s]);
+                IF_DEBUG(printf("[SICA] Setting upper bound offset to %i\n", band->sicadata->upperboundoffset[s]););
 
                 PlutoConstraints *ub = pluto_constraints_select_row(stmt->domain,
                         stmt->domain->nrows-1);
