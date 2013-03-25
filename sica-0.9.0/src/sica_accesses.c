@@ -241,10 +241,10 @@ void sica_get_trans_matrix(Band** bands, int nbands)    {
 	   	    }
 
    	    }
-    	sica_print_matrix_with_coloffset(act_band->sicadata->trans[s].val, act_band->sicadata->transwidth[s],act_band->sicadata->transwidth[s], 0);
+    	IF_DEBUG2(sica_print_matrix_with_coloffset(act_band->sicadata->trans[s].val, act_band->sicadata->transwidth[s],act_band->sicadata->transwidth[s], 0););
     	// [SICA] invert it
     	sica_inverse(act_band->sicadata->trans[s].val, act_band->sicadata->trans_inverted[s].val, act_band->sicadata->transwidth[s]);
-    	sica_print_matrix_with_coloffset(act_band->sicadata->trans_inverted[s].val, act_band->sicadata->transwidth[s],act_band->sicadata->transwidth[s], 0);
+    	IF_DEBUG2(sica_print_matrix_with_coloffset(act_band->sicadata->trans_inverted[s].val, act_band->sicadata->transwidth[s],act_band->sicadata->transwidth[s], 0););
       }
     }
 	// [SICA] STOP extract the transformation matrices before prevectorize

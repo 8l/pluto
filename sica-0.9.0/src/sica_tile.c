@@ -232,10 +232,10 @@ void sica_tile(PlutoProg *prog)
     pluto_detect_transformation_properties(prog);
 
     /* [SICA] get the transformation matrices BEFORE prevector transformation */
-    pluto_transformations_pretty_print(prog);
+    //pluto_transformations_pretty_print(prog);
 
     sica_get_trans_matrix(bands, nbands);
-    sica_print_fuse_structure(bands, nbands);
+    IF_DEBUG(sica_print_fuse_structure(bands, nbands););
 
     if (options->prevector) {
         int retval = 0;
