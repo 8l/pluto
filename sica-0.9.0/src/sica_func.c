@@ -388,7 +388,7 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 		    	//Now we have all necessary data concerning this access, check if we have to count it for vectorized accesses!
 
 		    	//check if the access is a just a scalar type, not a real array access (e.g. alpha or a[const][const])
-		    	int entry_sum=sica_get_entry_sum(trans_access_mat, act_band->loop->stmts[s]->reads[r]->mat->alloc_nrows, act_band->loop->stmts[s]->reads[r]->mat->alloc_ncols);
+		    	int entry_sum=sica_check_for_entry(trans_access_mat, act_band->loop->stmts[s]->reads[r]->mat->alloc_nrows, act_band->loop->stmts[s]->reads[r]->mat->alloc_ncols);
 
 		    	//IF it is a real array access...
 		    	if(entry_sum)    {
@@ -564,7 +564,7 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 		    	//Now we have all necessary data concerning this access, check if we have to count it for vectorized accesses!
 
 		    	//check if the access is a just a scalar type, not a real array access (e.g. alpha or a[const][const])
-		    	int entry_sum=sica_get_entry_sum(trans_access_mat, act_band->loop->stmts[s]->writes[w]->mat->alloc_nrows, act_band->loop->stmts[s]->writes[w]->mat->alloc_ncols);
+		    	int entry_sum=sica_check_for_entry(trans_access_mat, act_band->loop->stmts[s]->writes[w]->mat->alloc_nrows, act_band->loop->stmts[s]->writes[w]->mat->alloc_ncols);
 
 		    	//IF it is a real array access...
 		    	if(entry_sum)    {

@@ -35,7 +35,7 @@ void sica_copy_access_matrix(int** matrix1, int** matrix2, int rows, int cols);
 
 int sica_compare_access_matrices(int** matrix1, int** matrix2, int nrows, int ncols);
 
-int sica_get_entry_sum(int** matrix, int rows, int cols);
+int sica_check_for_entry(int** matrix, int rows, int cols);
 
 void sica_vec_times_matrix(int* solution_vec, int* vector, int** matrix, int rows, int columns);
 

@@ -93,18 +93,18 @@ int sica_compare_access_matrices(int** matrix1, int** matrix2, int rows, int col
 }
 
 
-int sica_get_entry_sum(int** matrix, int rows, int cols)    {
+int sica_check_for_entry(int** matrix, int rows, int cols)    {
 	int x,y;
 
 	int entry_sum=0;
 
    	for(y=0;y<rows;y++)    {
    		for(x=0;x<cols;x++)    {
-   			entry_sum+=matrix[y][x];
+   			if(matrix[y][x]) return 1;
 		}
    	}
 
-   	return entry_sum;
+   	return 0;
 }
 
 
