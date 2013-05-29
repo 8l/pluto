@@ -13,7 +13,8 @@ int another()
     options->tile = 1;
     options->parallel = 1;
     options->debug = 1;
-
+    options->moredebug = 1;
+    options->sica = 1;
 	isl_union_map *schedule = pluto_schedule(domains, deps, options);
 
     if (schedule) {
@@ -46,6 +47,8 @@ int main() {
 	PlutoOptions *options = pluto_options_alloc();
     options->tile = 1;
     options->parallel = 1;
+    options->moredebug = 1;
+    options->sica = 1;
 
 	isl_union_map *schedule = pluto_schedule(domains, deps, options);
 
