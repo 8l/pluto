@@ -272,8 +272,8 @@ void sica_tile(PlutoProg *prog)
             	    printf("[SICA] percentage of INNERMOST vectorized accesses: %.2f\n", 100.0*(float)act_band->sicadata->innermost_vec_accesses/(float)act_band->sicadata->vec_accesses);
             	    IF_DEBUG(printf("[SICA] bytes to be loaded by the vectorized accesses: %i Bytes\n", act_band->sicadata->bytes_per_vecit[s]););
 
-    		    sica_get_l1size(act_band->sicadata, sica_hardware, act_band->loop->nstmts); // [SICA] HERE A FUNCTION SHOULD BE CALLED THAT CALCULATES THE SICA SIZES FOR THAT BAND
-    		    act_band->sicadata->sical2size=sica_get_l2size(sica_hardware);  // [SICA] HERE A FUNCTION SHOULD BE CALLED THAT CALCULATES THE GLOBAL SIZE
+    		    sica_get_l1size(act_band->sicadata, sica_hardware, act_band->loop->nstmts); // [SICA] THE FUNCTION THAT CALCULATES THE SICA L1 SIZES FOR THAT BAND
+    		    act_band->sicadata->sical2size=sica_get_l2size(sica_hardware);  // [SICA] THE FUNCTION THAT CALCULATES THE GLOBAL L2 SIZE
 
     	        printf("[SICA] tile sizes for band %i -> Level-1: %i, Level-2: %i\n\n",i,act_band->sicadata->sical1size[s], act_band->sicadata->sical2size );
 
