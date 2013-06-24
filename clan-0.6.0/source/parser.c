@@ -1,9 +1,10 @@
-/* A Bison parser, made by GNU Bison 2.4.3.  */
+
+/* A Bison parser, made by GNU Bison 2.4.1.  */
 
 /* Skeleton implementation for Bison's Yacc-like parsers in C
    
-      Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-   2009, 2010 Free Software Foundation, Inc.
+      Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
    
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -45,7 +46,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "2.4.3"
+#define YYBISON_VERSION "2.4.1"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -134,7 +135,7 @@
 
 
 /* Line 189 of yacc.c  */
-#line 138 "parser.c"
+#line 139 "parser.c"
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -302,7 +303,7 @@ typedef union YYSTYPE
 
 
 /* Line 214 of yacc.c  */
-#line 306 "parser.c"
+#line 307 "parser.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -314,7 +315,7 @@ typedef union YYSTYPE
 
 
 /* Line 264 of yacc.c  */
-#line 318 "parser.c"
+#line 319 "parser.c"
 
 #ifdef short
 # undef short
@@ -364,7 +365,7 @@ typedef short int yytype_int16;
 #define YYSIZE_MAXIMUM ((YYSIZE_T) -1)
 
 #ifndef YY_
-# if defined YYENABLE_NLS && YYENABLE_NLS
+# if YYENABLE_NLS
 #  if ENABLE_NLS
 #   include <libintl.h> /* INFRINGES ON USER NAME SPACE */
 #   define YY_(msgid) dgettext ("bison-runtime", msgid)
@@ -998,18 +999,9 @@ static const yytype_uint8 yystos[] =
 
 /* Like YYERROR except do call yyerror.  This remains here temporarily
    to ease the transition to the new meaning of YYERROR, for GCC.
-   Once GCC version 2 has supplanted version 1, this can go.  However,
-   YYFAIL appears to be in use.  Nevertheless, it is formally deprecated
-   in Bison 2.4.2's NEWS entry, where a plan to phase it out is
-   discussed.  */
+   Once GCC version 2 has supplanted version 1, this can go.  */
 
 #define YYFAIL		goto yyerrlab
-#if defined YYFAIL
-  /* This is here to suppress warnings from the GCC cpp's
-     -Wunused-macros.  Normally we don't worry about that warning, but
-     some users do, and we want to make it easy for users to remove
-     YYFAIL uses, which will produce warnings from Bison 2.5.  */
-#endif
 
 #define YYRECOVERING()  (!!yyerrstatus)
 
@@ -1066,7 +1058,7 @@ while (YYID (0))
    we won't break user code: when these are the locations we know.  */
 
 #ifndef YY_LOCATION_PRINT
-# if defined YYLTYPE_IS_TRIVIAL && YYLTYPE_IS_TRIVIAL
+# if YYLTYPE_IS_TRIVIAL
 #  define YY_LOCATION_PRINT(File, Loc)			\
      fprintf (File, "%d.%d-%d.%d",			\
 	      (Loc).first_line, (Loc).first_column,	\
@@ -1805,35 +1797,35 @@ yyreduce:
     {
         case 2:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 164 "parser.y"
     {}
     break;
 
   case 3:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 166 "parser.y"
     {}
     break;
 
   case 4:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 168 "parser.y"
     {}
     break;
 
   case 5:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 170 "parser.y"
     {}
     break;
 
   case 6:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 177 "parser.y"
     {
 	/* The full program was parsed. Allocate and fill the final
@@ -1867,63 +1859,63 @@ yyreduce:
 
   case 11:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 220 "parser.y"
     {}
     break;
 
   case 12:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 222 "parser.y"
     {}
     break;
 
   case 13:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 228 "parser.y"
     {  parser_symbol_datatype = strdup((yyvsp[(1) - (1)].symbol)); }
     break;
 
   case 14:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 230 "parser.y"
     { parser_symbol_datatype = strcat(strdup("struct "),strdup((yyvsp[(2) - (2)].symbol)));}
     break;
 
   case 15:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 236 "parser.y"
     {}
     break;
 
   case 16:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 238 "parser.y"
     {}
     break;
 
   case 17:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 244 "parser.y"
     {}
     break;
 
   case 18:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 246 "parser.y"
     {}
     break;
 
   case 19:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 261 "parser.y"
     {     
     
@@ -1935,7 +1927,7 @@ yyreduce:
 
   case 20:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 272 "parser.y"
     { 
        
@@ -1950,14 +1942,14 @@ yyreduce:
 
   case 21:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 286 "parser.y"
     { }
     break;
 
   case 24:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 319 "parser.y"
     {
         clan_symbol_p symbol;
@@ -1983,7 +1975,7 @@ yyreduce:
 
   case 25:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 341 "parser.y"
     {
         scoplib_vector_p parser_i_term = clan_vector_term(parser_clan_symbol,1,(yyvsp[(3) - (6)].symbol));
@@ -2007,7 +1999,7 @@ yyreduce:
 
   case 26:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 361 "parser.y"
     {
 	scoplib_matrix_insert_matrix(parser_domain,(yyvsp[(9) - (9)].setex),parser_nb_cons);
@@ -2018,7 +2010,7 @@ yyreduce:
 
   case 27:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 369 "parser.y"
     {
         parser_depth++;
@@ -2028,7 +2020,7 @@ yyreduce:
 
   case 28:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 374 "parser.y"
     {
         parser_depth--;
@@ -2041,7 +2033,7 @@ yyreduce:
 
   case 29:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 386 "parser.y"
     {
 	/* Insert the condition constraint in the current parser domain. */
@@ -2052,7 +2044,7 @@ yyreduce:
 
   case 30:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 392 "parser.y"
     {
         parser_nb_cons -= (yyvsp[(3) - (6)].setex)->NbRows;
@@ -2066,7 +2058,7 @@ yyreduce:
 
   case 31:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 404 "parser.y"
     {
         parser_statement = scoplib_statement_malloc();
@@ -2082,7 +2074,7 @@ yyreduce:
 
   case 32:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 415 "parser.y"
     {
 	/* Deal with statements without surrounding loop by adding a
@@ -2140,7 +2132,7 @@ yyreduce:
 
   case 33:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 473 "parser.y"
     {
 	int i, j;
@@ -2164,7 +2156,7 @@ yyreduce:
 
   case 34:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 497 "parser.y"
     {
 	int i, j;
@@ -2188,7 +2180,7 @@ yyreduce:
 
   case 35:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 527 "parser.y"
     {
         free((yyvsp[(1) - (2)].symbol));
@@ -2197,7 +2189,7 @@ yyreduce:
 
   case 36:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 531 "parser.y"
     {
         free((yyvsp[(2) - (2)].symbol));
@@ -2206,7 +2198,7 @@ yyreduce:
 
   case 37:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 535 "parser.y"
     {
        if ((yyvsp[(5) - (5)].value) != 1)
@@ -2221,7 +2213,7 @@ yyreduce:
 
   case 38:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 545 "parser.y"
     {
        if ((yyvsp[(3) - (3)].value) != 1)
@@ -2235,7 +2227,7 @@ yyreduce:
 
   case 39:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 563 "parser.y"
     {
 	(yyval.setex) = scoplib_matrix_from_vector((yyvsp[(1) - (1)].affex));
@@ -2245,7 +2237,7 @@ yyreduce:
 
   case 40:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 569 "parser.y"
     {
        (yyval.setex) = scoplib_matrix_concat((yyvsp[(3) - (6)].setex), (yyvsp[(5) - (6)].setex));
@@ -2254,7 +2246,7 @@ yyreduce:
 
   case 41:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 582 "parser.y"
     {
 	(yyval.setex) = scoplib_matrix_from_vector((yyvsp[(1) - (1)].affex));
@@ -2264,7 +2256,7 @@ yyreduce:
 
   case 42:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 588 "parser.y"
     {
        (yyval.setex) = scoplib_matrix_concat((yyvsp[(3) - (6)].setex), (yyvsp[(5) - (6)].setex));
@@ -2273,7 +2265,7 @@ yyreduce:
 
   case 43:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 601 "parser.y"
     {
         (yyval.affex) = (yyvsp[(1) - (1)].affex);
@@ -2282,7 +2274,7 @@ yyreduce:
 
   case 44:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 605 "parser.y"
     {
         (yyval.affex) = scoplib_vector_add((yyvsp[(1) - (3)].affex),(yyvsp[(3) - (3)].affex));
@@ -2293,7 +2285,7 @@ yyreduce:
 
   case 45:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 611 "parser.y"
     {
         (yyval.affex) = scoplib_vector_sub((yyvsp[(1) - (3)].affex),(yyvsp[(3) - (3)].affex));
@@ -2304,7 +2296,7 @@ yyreduce:
 
   case 46:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 617 "parser.y"
     {
         (yyval.affex) = (yyvsp[(2) - (3)].affex);
@@ -2313,7 +2305,7 @@ yyreduce:
 
   case 47:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 621 "parser.y"
     {
 	SCOPVAL_assign((yyvsp[(3) - (6)].affex)->p[0], (yyvsp[(5) - (6)].affex)->p[(yyvsp[(5) - (6)].affex)->Size - 1]);
@@ -2323,7 +2315,7 @@ yyreduce:
 
   case 48:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 626 "parser.y"
     {
 	SCOPVAL_assign((yyvsp[(3) - (6)].affex)->p[0], (yyvsp[(5) - (6)].affex)->p[(yyvsp[(5) - (6)].affex)->Size - 1]);
@@ -2333,7 +2325,7 @@ yyreduce:
 
   case 49:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 643 "parser.y"
     {
         (yyval.affex) = clan_vector_term(parser_clan_symbol,(yyvsp[(1) - (1)].value),NULL);
@@ -2342,7 +2334,7 @@ yyreduce:
 
   case 50:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 650 "parser.y"
     {
         clan_symbol_add(&parser_clan_symbol,(yyvsp[(1) - (1)].symbol),SCOPLIB_TYPE_UNKNOWN,parser_depth);
@@ -2353,7 +2345,7 @@ yyreduce:
 
   case 51:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 659 "parser.y"
     {
         (yyval.affex) = clan_vector_term(parser_clan_symbol,-((yyvsp[(2) - (2)].value)),NULL);
@@ -2362,7 +2354,7 @@ yyreduce:
 
   case 52:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 666 "parser.y"
     {
         clan_symbol_add(&parser_clan_symbol,(yyvsp[(3) - (3)].symbol),SCOPLIB_TYPE_UNKNOWN,parser_depth);
@@ -2373,7 +2365,7 @@ yyreduce:
 
   case 53:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 675 "parser.y"
     {
         clan_symbol_add(&parser_clan_symbol,(yyvsp[(1) - (3)].symbol),SCOPLIB_TYPE_UNKNOWN,parser_depth);
@@ -2384,7 +2376,7 @@ yyreduce:
 
   case 54:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 684 "parser.y"
     {
         (yyval.affex) = clan_vector_term(parser_clan_symbol, ((yyvsp[(1) - (3)].value)) * ((yyvsp[(3) - (3)].value)), NULL);
@@ -2393,7 +2385,7 @@ yyreduce:
 
   case 55:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 691 "parser.y"
     {
         (yyval.affex) = clan_vector_term(parser_clan_symbol, ((yyvsp[(1) - (3)].value)) / ((yyvsp[(3) - (3)].value)), NULL);
@@ -2402,7 +2394,7 @@ yyreduce:
 
   case 56:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 698 "parser.y"
     {
         clan_symbol_add(&parser_clan_symbol,(yyvsp[(4) - (4)].symbol),SCOPLIB_TYPE_UNKNOWN,parser_depth);
@@ -2413,7 +2405,7 @@ yyreduce:
 
   case 57:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 707 "parser.y"
     {
         clan_symbol_add(&parser_clan_symbol,(yyvsp[(2) - (4)].symbol),SCOPLIB_TYPE_UNKNOWN,parser_depth);
@@ -2424,7 +2416,7 @@ yyreduce:
 
   case 58:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 716 "parser.y"
     {
         clan_symbol_add(&parser_clan_symbol,(yyvsp[(2) - (2)].symbol),SCOPLIB_TYPE_UNKNOWN,parser_depth);
@@ -2435,7 +2427,7 @@ yyreduce:
 
   case 59:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 736 "parser.y"
     {
         /* a<b translates to -a+b-1>=0 */
@@ -2472,7 +2464,7 @@ yyreduce:
 
   case 60:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 771 "parser.y"
     {
         /* a>b translates to a-b-1>=0 */
@@ -2511,7 +2503,7 @@ yyreduce:
 
   case 61:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 808 "parser.y"
     {
         /* a<=b translates to -a+b>=0 */
@@ -2546,7 +2538,7 @@ yyreduce:
 
   case 62:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 841 "parser.y"
     {
         /* a>=b translates to a-b>=0 */
@@ -2583,7 +2575,7 @@ yyreduce:
 
   case 63:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 876 "parser.y"
     {
         /* a==b translates to a-b==0 */
@@ -2602,7 +2594,7 @@ yyreduce:
 
   case 64:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 893 "parser.y"
     {
 	(yyval.setex) = (yyvsp[(2) - (3)].setex);
@@ -2611,7 +2603,7 @@ yyreduce:
 
   case 65:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 900 "parser.y"
     {
        (yyval.setex) = scoplib_matrix_concat((yyvsp[(1) - (3)].setex),(yyvsp[(3) - (3)].setex));
@@ -2622,7 +2614,7 @@ yyreduce:
 
   case 76:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 944 "parser.y"
     {
 	if ((yyvsp[(1) - (4)].setex) == NULL)
@@ -2637,7 +2629,7 @@ yyreduce:
 
   case 77:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 957 "parser.y"
     {
 	if ((yyvsp[(1) - (4)].setex) == NULL)
@@ -2653,7 +2645,7 @@ yyreduce:
 
   case 78:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 971 "parser.y"
     {
 	if ((yyvsp[(1) - (3)].setex) == NULL)
@@ -2668,7 +2660,7 @@ yyreduce:
 
   case 79:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 984 "parser.y"
     {
 	if ((yyvsp[(2) - (3)].setex) == NULL)
@@ -2683,7 +2675,7 @@ yyreduce:
 
   case 80:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 997 "parser.y"
     {
        (yyval.rw)[0] = (yyvsp[(1) - (2)].setex);
@@ -2693,7 +2685,7 @@ yyreduce:
 
   case 81:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 1005 "parser.y"
     {
        (yyval.rw)[0] = (yyvsp[(2) - (3)].rw)[0];
@@ -2703,7 +2695,7 @@ yyreduce:
 
   case 95:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 1041 "parser.y"
     {
         (yyval.setex) = NULL;
@@ -2712,7 +2704,7 @@ yyreduce:
 
   case 96:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 1048 "parser.y"
     {
         (yyval.setex) = NULL;
@@ -2721,7 +2713,7 @@ yyreduce:
 
   case 97:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 1055 "parser.y"
     {
         (yyval.setex) = (yyvsp[(1) - (1)].setex);
@@ -2730,7 +2722,7 @@ yyreduce:
 
   case 98:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 1063 "parser.y"
     {
         (yyval.setex) = scoplib_matrix_concat((yyvsp[(1) - (3)].setex),(yyvsp[(3) - (3)].setex));
@@ -2741,7 +2733,7 @@ yyreduce:
 
   case 99:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 1072 "parser.y"
     {
         (yyval.setex) = (yyvsp[(2) - (2)].setex);
@@ -2750,7 +2742,7 @@ yyreduce:
 
   case 100:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 1079 "parser.y"
     {
 	(yyval.setex) = (yyvsp[(2) - (3)].setex);
@@ -2759,7 +2751,7 @@ yyreduce:
 
   case 101:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 1086 "parser.y"
     {
 	scoplib_matrix_p tmp = scoplib_matrix_concat((yyvsp[(1) - (5)].setex),(yyvsp[(3) - (5)].setex));
@@ -2773,7 +2765,7 @@ yyreduce:
 
   case 102:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 1108 "parser.y"
     {
         int rank;
@@ -2800,7 +2792,7 @@ yyreduce:
 
   case 103:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 1134 "parser.y"
     {
         int rank;
@@ -2814,7 +2806,7 @@ yyreduce:
 
   case 104:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 1147 "parser.y"
     {
 	(yyval.setex) = (yyvsp[(3) - (4)].setex);
@@ -2824,7 +2816,7 @@ yyreduce:
 
   case 105:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 1155 "parser.y"
     {
 	(yyval.setex) = (yyvsp[(2) - (2)].setex);
@@ -2833,7 +2825,7 @@ yyreduce:
 
   case 106:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 1162 "parser.y"
     {
 	(yyval.setex) = (yyvsp[(2) - (2)].setex);
@@ -2842,7 +2834,7 @@ yyreduce:
 
   case 113:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 1190 "parser.y"
     {
 	(yyval.setex) = (yyvsp[(1) - (1)].setex);
@@ -2851,7 +2843,7 @@ yyreduce:
 
   case 114:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 1197 "parser.y"
     {
 	(yyval.setex) = scoplib_matrix_concat((yyvsp[(1) - (3)].setex),(yyvsp[(3) - (3)].setex));
@@ -2860,7 +2852,7 @@ yyreduce:
 
   case 115:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 1204 "parser.y"
     {
 	(yyval.setex) = (yyvsp[(1) - (3)].setex);
@@ -2869,7 +2861,7 @@ yyreduce:
 
   case 116:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 1211 "parser.y"
     {
 	(yyval.setex) = NULL;
@@ -2878,7 +2870,7 @@ yyreduce:
 
   case 117:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 1218 "parser.y"
     {
 	(yyval.setex) = NULL;
@@ -2887,7 +2879,7 @@ yyreduce:
 
   case 118:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 1234 "parser.y"
     {
         (yyval.setex) = scoplib_matrix_from_vector((yyvsp[(2) - (3)].affex));
@@ -2897,7 +2889,7 @@ yyreduce:
 
   case 119:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 1242 "parser.y"
     {
 	if ((yyvsp[(1) - (4)].setex) != NULL)
@@ -2909,7 +2901,7 @@ yyreduce:
 
   case 120:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 1263 "parser.y"
     {
        (yyval.symbol) = (yyvsp[(1) - (1)].symbol);
@@ -2918,7 +2910,7 @@ yyreduce:
 
   case 121:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 1270 "parser.y"
     {
        (yyval.symbol) = (yyvsp[(2) - (3)].symbol);
@@ -2927,7 +2919,7 @@ yyreduce:
 
   case 122:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 1277 "parser.y"
     {
        (yyval.symbol) = (yyvsp[(2) - (2)].symbol);
@@ -2936,7 +2928,7 @@ yyreduce:
 
   case 123:
 
-/* Line 1464 of yacc.c  */
+/* Line 1455 of yacc.c  */
 #line 1284 "parser.y"
     {
        (yyval.symbol) = NULL;
@@ -2945,8 +2937,8 @@ yyreduce:
 
 
 
-/* Line 1464 of yacc.c  */
-#line 2950 "parser.c"
+/* Line 1455 of yacc.c  */
+#line 2942 "parser.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -3157,7 +3149,7 @@ yyreturn:
 
 
 
-/* Line 1684 of yacc.c  */
+/* Line 1675 of yacc.c  */
 #line 1296 "parser.y"
 
 

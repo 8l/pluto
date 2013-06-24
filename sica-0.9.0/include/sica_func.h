@@ -9,7 +9,7 @@
 #ifndef SICA_FUNC_H_
 #define SICA_FUNC_H_
 
-#define SICA_DEFAULT_DATA_BYTES 4 //declare a 4 bate data element as default if no one is specified
+#define SICA_DEFAULT_DATA_BYTES 4 //suggest a 4 byte data element for the vector registers as default if no one is specified
 
 #include "pluto.h"
 

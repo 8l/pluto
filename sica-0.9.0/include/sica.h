@@ -21,28 +21,28 @@ typedef struct sica_matrix SICAMatrix;
 
 /* [SICA] structure for SICA necessary data */
 struct sica_data{
-	int isvec;					//is the band vectorizable?
+	int isvec;			//is the band vectorizable?
 	
-    int vecloop; 				//vectorized loop t%i
-    int vecrow; 				//row in tile_sizes related to vectorized loop t%i
+    int vecloop; 			//vectorized loop t%i
+    int vecrow; 			//row in tile_sizes related to vectorized loop t%i
     
     int* sical1size; 			//l1 tile size for vectorized loop for each statement
     int sical2size; 			//l2 tile size for outermost loop, same for each statement as it is only hardware related
     
     int *upperboundoffset; 		//offsetarray for each statement for retiling upper bound (this depends on transformation matrix),
-								//as this is modified in the process, this backup is needed
+					//as this is modified in the process, this backup is needed
 
     char **id2arrayname; 		//array that stores the names of all arrays to specify a unique id for each
     int nb_arrays;
 
-    SICAMatrix *trans;				//pointer to transformation matrices for each statement in this band, trans[s]->mat[][]
+    SICAMatrix *trans;			//pointer to transformation matrices for each statement in this band, trans[s]->mat[][]
     SICAMatrix *trans_inverted;		//inverted transformation matrix
-    int *transwidth;			//width of the quadratic transformation matrix TODO: is it always quadratic
+    int *transwidth;			//width of the quadratic transformation matrix TODO: need strategy if it is not quardratic!
 
     int *tilewidth;			//number of tiled dimensions sometimes != stms->num_tiled_loops (because of scalar dims);
 
     int vec_accesses;			//number of counted (different) accesses by the vectorized loop in this band
-    int innermost_vec_accesses;	//number of counted (different) INNERMOST accesses by the vectorized loop in this band
+    int innermost_vec_accesses;		//number of counted (different) INNERMOST accesses by the vectorized loop in this band
     int* bytes_per_vecit;		//number of bytes that have to be loaded per iteration of the vectorized loop within this statement in this band
 
     int* largest_data_type;		/*this value is/might be interesting for mixed precision calculations because the different
