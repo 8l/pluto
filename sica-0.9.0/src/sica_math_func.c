@@ -324,7 +324,8 @@ void sica_inverse(int** matrix, int** matrix_inverted, int N)
 	float det = sica_echelon_determinant(temp_matrix, N);
 	if(det==0)
 	{
-		printf("[ERROR]: Matrix not invertible!!!\n");
+		printf("[ERROR]: Transformation-Matrix not invertible! Please try without the --sica option. We would appreciate if you could send us the code that fails.\n");
+		exit(EXIT_FAILURE);
 	}
 	else
 	{

@@ -323,6 +323,7 @@ void set_l3_cache_parameter(int new_byte, int *l3_cache)
 }
 
 
+// not necessary in this usage
 //string get_cache_tbl_string(int new_byte)
 //{
 //	if(new_byte==0x00)

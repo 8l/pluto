@@ -675,7 +675,7 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 	    } /* End of loop across the arrays */
 	    //get the PluTo defined data types + (null)->default and calculate the tile quantities
 
-	    //NOW LOKK UP HOW MANY ACCESSES OF WHICH TYPE ARE AVAILABLE
+	    //NOW LOOK UP HOW MANY ACCESSES OF WHICH TYPE ARE AVAILABLE
 
 
 

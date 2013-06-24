@@ -57,7 +57,7 @@ void get_compiler_info()
 		}
 	}
 
-//	//TODO
+//	//TODO->should this be checked anymore? In general not, e.g. because of other compilers/vector registers!
 //	printf("[CACHE] Runtime available Version:\tGCC %i.%i.%i (number: %i)\n", version_seperated[0], version_seperated[1], version_seperated[2],version);
 //
 //	if(version>40000)
