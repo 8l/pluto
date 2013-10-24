@@ -24,6 +24,10 @@
 #include "pluto/libpluto.h"
 #include "isl/map.h"
 
+#include "sica_post_transform.h"
+#include "sica_tile.h"
+#include "sica_tilesizes.h"
+
 PlutoOptions *options;
 
 /*
