@@ -145,10 +145,10 @@ int i, s, x;
       free(bands[i]->sicadata->trans); //matrix for each statement
       free(bands[i]->sicadata->trans_inverted); //matrix for each statement
 
-      free(bands[i]->sicadata->transwidth); 
+      free(bands[i]->sicadata->transwidth);
 
 
-      free(bands[i]->sicadata->coloffset); 
+      free(bands[i]->sicadata->coloffset);
 
       free(bands[i]->sicadata);
     }
@@ -179,9 +179,7 @@ void sica_check_for_stmts_in_scalar_dim(int act_s, Band* act_band, SICAStmtList*
 
 void sica_get_band_specific_tile_sizes(Band* act_band)    {
 
-	int a,s,t,r,w,x,y;//,i;
-		///////////////////////////////////////////////
-	    //TEST THE NEW SICA
+	int a,s,t,r,w,x,y,it1,it2;//,i;
 
 		/* [SICA] get an array<->id relation
 		 *
@@ -292,6 +290,57 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 
 	    	s=s_all;
 
+	    	/*******************************************************************************************
+	    	 * [SICAALL] Create the global access-count-matrix and a global byte-count-matrix
+	    	 *
+	    	 * nb_accesses_on_dimMDINNER[statement][loop]: Counts how often loop accesses a
+             *                                             multidimensional array in the
+             *                                             innermost dimension [to coose the tile loop]
+             *
+             * nb_accesses_on_dimALL[statement][loop]:     Counts how often loop accesses any
+             *                                             array (only distinct ones) in any
+             *                                             dimension [to calculate the tile size]
+             *
+             * nb_bytes_by_loop[statement][loop]:          Counts how many bytes have to be loaded for
+             *                                             loop [to calculate the tile size]
+             *
+	    	 ********************************************************************************************/
+	    	//printf("NEED Arrays with %i entries for statement %i!!!\n",act_band->sicadata->transwidth[s], s);
+            /** nb_accesses_on_dimMDINNER[statement][loop] **/
+	    	act_band->sicadata->nb_accesses_on_dimMDINNER=(int**)malloc(act_band->loop->nstmts*sizeof(int*)); //one for each statement
+		    for(y=0; y<act_band->loop->nstmts; y++)    {                                               //one for each loop dimension
+		    	act_band->sicadata->nb_accesses_on_dimMDINNER[y]=(int*)malloc(act_band->sicadata->transwidth[s]*sizeof(int));
+		    }
+		    for(x=0;x<act_band->loop->nstmts;x++)  {
+                for(y=0;y<act_band->sicadata->transwidth[s];y++)  {
+                act_band->sicadata->nb_accesses_on_dimMDINNER[x][y]=0;
+                }
+		    }
+            /** nb_accesses_on_dimALL[statement][loop] **/
+		    act_band->sicadata->nb_accesses_on_dimALL=(int**)malloc(act_band->loop->nstmts*sizeof(int*)); //one for each statement
+		    for(y=0; y<act_band->loop->nstmts; y++)    {                                               //one for each loop dimension
+		    	act_band->sicadata->nb_accesses_on_dimALL[y]=(int*)malloc(act_band->sicadata->transwidth[s]*sizeof(int));
+		    }
+		    for(x=0;x<act_band->loop->nstmts;x++)  {
+                for(y=0;y<act_band->sicadata->transwidth[s];y++)  {
+                act_band->sicadata->nb_accesses_on_dimALL[x][y]=0;
+                }
+		    }
+            /** nb_bytes_by_loop[statement][loop] **/
+		    act_band->sicadata->nb_bytes_by_loop=(int**)malloc(act_band->loop->nstmts*sizeof(int*)); //one for each statement
+		    for(y=0; y<act_band->loop->nstmts; y++)    {                                               //one for each loop dimension
+		    	act_band->sicadata->nb_bytes_by_loop[y]=(int*)malloc(act_band->sicadata->transwidth[s]*sizeof(int));
+		    }
+		    for(x=0;x<act_band->loop->nstmts;x++)  {
+                for(y=0;y<act_band->sicadata->transwidth[s];y++)  {
+                act_band->sicadata->nb_bytes_by_loop[x][y]=0;
+                }
+		    }
+
+
+
+	    	//[statement][loop]
+
 	    	/* [SICA] Now go through all statements with the same scalar dimension within this band */
 	    	while(sica_stmts_in_scalar_dim)    {
 	    		IF_DEBUG(printf("Statement %i\n", sica_stmts_in_scalar_dim->stmt_nb););
@@ -397,6 +446,7 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 
 						//printf("IS_VEC: %i, vecrow: %i, row_in_access_mat: %i\n",act_band->sicadata->isvec,act_band->sicadata->vecrow,access_offset+act_band->sicadata->vecrow);
 			    		//...CHECK IF there is one or more dimensions that is accessed by the vectorized loop and...
+
 						if(act_band->sicadata->isvec&&trans_access_mat[y][access_offset+act_band->sicadata->vecrow])    {
 							IF_DEBUG(printf("[SICA] VECTORIZATION: Array '%s' accesses dimension '%i' by a vectorized loop!\n", act_band->loop->stmts[s]->reads[r]->name, y););
 
@@ -467,7 +517,120 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 
 						}
 						if(!act_band->sicadata->isvec)    {
-							IF_DEBUG(printf("[SICA] THIS IS NOT A VECTORIZED BAND\n"););
+							IF_DEBUG(printf("[SICAALL] THIS IS NOT A VECTORIZED BAND\n"););
+		    		        IF_DEBUG(printf("[SICAALL] The READ-Access on Array '%s' is relevant for SICAALL!\n", act_band->loop->stmts[s]->reads[r]->name););
+		    		        IF_DEBUG(printf("[SICAALL] Array '%s' accesses dimension '%i' by a non-vectorized loop!\n", act_band->loop->stmts[s]->reads[r]->name, y););
+
+                            IF_DEBUG2(printf("[SICAALL] ACCESS LINE: "););
+                            for(x=0;x<act_band->sicadata->transwidth[s];x++)    {
+                                IF_DEBUG2(printf("%i ", trans_access_mat[y][access_offset+x]););
+                            }
+                            IF_DEBUG2(printf("\n"););
+
+
+                            /*********************************************************************************
+                             * SICAALL: Here starts the functionality of SICA for non-vectorized bands.
+                             * The flow works as follows:
+                             * 1. check if the prospected access has already been recognized for this
+                             *    statement, e.g. if there are two identical accesses A[i][j] = ... + A[i][j]
+                             * 2. if the access is "new":
+                             *    2.1 count for ALL accesses how many accesses are performed by which loop
+                             *        (in array nb_accesses_on_dimALL)
+                             *    2.2 if the innermost dimension of an array is accessed
+                             *        2.2.1 if this is an multi-dimensional array, count which loop accesses
+                             *              this innermost dimension and should therefore be counted to become
+                             *              innermost when tiled
+                             *              for single-dimension arrays, there will not be a (X>1)-strided
+                             *              access for any loop so that these accesses are only counted to
+                             *              calculate the tile size but not to decide which loop to tile
+                             *        after that the last dimension of the array has been analysed and this
+                             *        access can be registered as "counted" to be used in the next step (1.)
+                             *********************************************************************************/
+
+                            int sica_access_is_new=1;
+
+							//...CHECK IF the access (matrix) is already recognized for this array (e.g. C[i][j]=C[i][j]+...). ...
+							//printf("[SICA] ACT-POINTER: %p\n",sica_accesses_on_array[act_array_id]);
+							SICAAccess* act_access_temp=sica_accesses_on_array[act_array_id];
+
+							while(act_access_temp->next)    {
+								//CHECK IF THE act_access_temp->mat is equal to the actual one
+								int check_comparison=ACCESS_IS_NOT_IDENTICAL;
+								check_comparison=sica_compare_access_matrices(trans_access_mat, act_access_temp->access_mat, act_band->loop->stmts[s]->reads[r]->mat->alloc_nrows, act_band->loop->stmts[s]->reads[r]->mat->alloc_ncols);
+
+								//IF THEY ARE EQUAL
+								if(check_comparison==ACCESS_IS_IDENTICAL)    {
+									IF_DEBUG(printf("[SICAALL] THIS READ ACCESS ON '%s' IS ALREADY RECOGNIZED AND THEREFORE NOT ADDED!\n", act_band->loop->stmts[s]->reads[r]->name););
+									sica_access_is_new=0;
+									break;
+								}
+
+								if(check_comparison==ACCESS_IS_IN_SAME_STRIDE) {
+									IF_DEBUG(printf("[SICAALL] THIS READ ACCESS ON '%s' IS ALREADY RECOGNIZED IN A PREVIOUS STRIDE AND THEREFORE NOT ADDED!\n", act_band->loop->stmts[s]->reads[r]->name););
+									sica_access_is_new=0;
+									break;
+								}
+
+								if(check_comparison==ACCESS_IS_NOT_IDENTICAL){
+									IF_DEBUG(printf("[SICAALL] THIS READ ACCESS ON '%s' IS NEW!\n", act_band->loop->stmts[s]->reads[r]->name););
+									act_access_temp=act_access_temp->next;
+								}
+							}
+
+							//...IF NOT, add it to the linked list for this array and increase the counter ...DO THIS ONLY FOR THE INNERMOST DIMENSION OF EACH ARRAY
+							if(sica_access_is_new)    {
+                                for(it1=0;it1<act_band->sicadata->transwidth[s];it1++)  {
+                                    if(trans_access_mat[y][access_offset+it1]) {
+                                    IF_DEBUG(printf("[SICAALL] Statement %i has an innermost access on array %s from loop %i\n",s,act_band->loop->stmts[s]->reads[r]->name, it1););//act_band->sicadata->innermost_vec_accesses++;
+                                    //SICAALL: COUNT UP THE RESPECTIVE VALUE [statement][loop]!!!
+                                    act_band->sicadata->nb_accesses_on_dimALL[s][it1]++;
+                                    }
+                                }
+                                if((y==act_band->loop->stmts[s]->reads[r]->mat->alloc_nrows-1))  { //WHEN ACCESSING THE LAST DIMENSION, THE SYSTEM RECOGNIZES WHICH LOOPS ACCESS THE INNERMOST DIMENSION AND REGISTRATES THIS ACCESS IF IT HAS BEEN "NEW"
+                                    if(y>0)  {//IF THIS ACCESS IS INNERMOST AN IN AN MULTIDIMENSIONAL (dim>=2) ARRAY, OTHERWISE THERE ARE ANYWAY NO STRIDES
+                                        for(it2=0;it2<act_band->sicadata->transwidth[s];it2++)  {
+                                            if(trans_access_mat[y][access_offset+it2]) {
+                                            IF_DEBUG(printf("[SICAALL] Statement %i has an innermost access on array %s from loop %i\n",s,act_band->loop->stmts[s]->reads[r]->name, it2););//act_band->sicadata->innermost_vec_accesses++;
+                                            //SICAALL: COUNT UP THE RESPECTIVE VALUE [statement][loop]!!!
+                                            act_band->sicadata->nb_accesses_on_dimMDINNER[s][it2]++;
+                                            }
+                                        }
+                                    }
+
+                                    act_access_temp->nrows = act_band->loop->stmts[s]->reads[r]->mat->alloc_nrows;
+                                    act_access_temp->ncols = act_band->loop->stmts[s]->reads[r]->mat->alloc_ncols;
+
+
+                                    act_access_temp->next=sica_accesses_malloc();
+
+                                    act_access_temp->access_mat=sica_access_matrix_malloc(act_band->loop->stmts[s]->reads[r]->mat->alloc_nrows, act_band->loop->stmts[s]->reads[r]->mat->alloc_ncols);
+                                    sica_copy_access_matrix(act_access_temp->access_mat, trans_access_mat, act_band->loop->stmts[s]->reads[r]->mat->alloc_nrows, act_band->loop->stmts[s]->reads[r]->mat->alloc_ncols);
+                                    IF_DEBUG(printf("[SICAALL] ADDED READ ACCESS ON '%s'!\n", act_band->sicadata->id2arrayname[act_array_id]););
+
+                                    int new_bytes=0;
+                                    //IF THE DATA TYPE IS DEFINED
+                                    if(act_band->loop->stmts[s]->reads[r]->symbol->data_type)    {
+                                        IF_DEBUG(printf("[SICAALL] THIS ACCESS IS OF TYPE '%s'!\n", act_band->loop->stmts[s]->reads[r]->symbol->data_type););
+                                        //COUNT the bytes that have to be loaded for this access
+                                        new_bytes=sica_get_bytes_of_type(act_band->loop->stmts[s]->reads[r]->symbol->data_type);
+                                    } else {
+                                        printf("[SICAALL] WARNING: The datatype of an array was not recognized and therefore set to a DEFAULT VALUE: %i Bytes!\n", SICA_DEFAULT_DATA_BYTES);
+                                        new_bytes=SICA_DEFAULT_DATA_BYTES;
+                                    }
+                                    //[SICAALL] update the largest datatype if necessary
+                                    if(new_bytes>act_band->sicadata->largest_data_type[s]){
+                                        act_band->sicadata->largest_data_type[s]=new_bytes;
+                                    }
+                                    //[SICAALL] add the additional bytes
+                                    for(it1=0;it1<act_band->sicadata->transwidth[s];it1++)  {
+                                        if(trans_access_mat[y][access_offset+it1]) {
+                                            act_band->sicadata->nb_bytes_by_loop[s][it1]+=new_bytes;
+                                            IF_DEBUG(printf("[SICAALL] ADDING %i bytes for access on array %s by statement %i and loop %i\n", new_bytes, act_band->loop->stmts[s]->reads[r]->name,s,it1););
+                                        }
+                                    }
+
+								}
+							}
 						}
 
 			    	}
@@ -639,11 +802,124 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 								}
 								//[SICA] add the additional bytes
 								act_band->sicadata->bytes_per_vecit[s]+=new_bytes;
+
 							}
 
 						}
 						if(!act_band->sicadata->isvec)    {
-							IF_DEBUG(printf("[SICA] THIS IS NOT A VECTORIZED BAND\n"););
+							IF_DEBUG(printf("[SICAALL] THIS IS NOT A VECTORIZED BAND\n"););
+		    		        IF_DEBUG(printf("[SICAALL] The WRITE-Access on Array '%s' is relevant for SICAALL!\n", act_band->loop->stmts[s]->writes[w]->name););
+		    		        IF_DEBUG(printf("[SICAALL] Array '%s' accesses dimension '%i' by a non-vectorized loop!\n", act_band->loop->stmts[s]->writes[w]->name, y););
+
+                            IF_DEBUG2(printf("[SICAALL] ACCESS LINE: "););
+                            for(x=0;x<act_band->sicadata->transwidth[s];x++)    {
+                                IF_DEBUG2(printf("%i ", trans_access_mat[y][access_offset+x]););
+                            }
+                            IF_DEBUG2(printf("\n"););
+
+
+                            /*********************************************************************************
+                             * SICAALL: Here starts the functionality of SICA for non-vectorized bands.
+                             * The flow works as follows:
+                             * 1. check if the prospected access has already been recognized for this
+                             *    statement, e.g. if there are two identical accesses A[i][j] = ... + A[i][j]
+                             * 2. if the access is "new":
+                             *    2.1 count for ALL accesses how many accesses are performed by which loop
+                             *        (in array nb_accesses_on_dimALL)
+                             *    2.2 if the innermost dimension of an array is accessed
+                             *        2.2.1 if this is an multi-dimensional array, count which loop accesses
+                             *              this innermost dimension and should therefore be counted to become
+                             *              innermost when tiled
+                             *              for single-dimension arrays, there will not be a (X>1)-strided
+                             *              access for any loop so that these accesses are only counted to
+                             *              calculate the tile size but not to decide which loop to tile
+                             *        after that the last dimension of the array has been analysed and this
+                             *        access can be registered as "counted" to be used in the next step (1.)
+                             *********************************************************************************/
+
+                            int sica_access_is_new=1;
+
+							//...CHECK IF the access (matrix) is already recognized for this array (e.g. C[i][j]=C[i][j]+...). ...
+							//printf("[SICAALL] ACT-POINTER: %p\n",sica_accesses_on_array[act_array_id]);
+							SICAAccess* act_access_temp=sica_accesses_on_array[act_array_id];
+
+							while(act_access_temp->next)    {
+								//CHECK IF THE act_access_temp->mat is equal to the actual one
+								int check_comparison=ACCESS_IS_NOT_IDENTICAL;
+								check_comparison=sica_compare_access_matrices(trans_access_mat, act_access_temp->access_mat, act_band->loop->stmts[s]->writes[w]->mat->alloc_nrows, act_band->loop->stmts[s]->writes[w]->mat->alloc_ncols);
+
+								//IF THEY ARE EQUAL
+								if(check_comparison==ACCESS_IS_IDENTICAL)    {
+									IF_DEBUG(printf("[SICAALL] THIS WRITE ACCESS ON '%s' IS ALREADY RECOGNIZED AND THEREFORE NOT ADDED!\n", act_band->loop->stmts[s]->writes[w]->name););
+									sica_access_is_new=0;
+									break;
+								}
+
+								if(check_comparison==ACCESS_IS_IN_SAME_STRIDE) {
+									IF_DEBUG(printf("[SICAALL] THIS WRITE ACCESS ON '%s' IS ALREADY RECOGNIZED IN A PREVIOUS STRIDE AND THEREFORE NOT ADDED!\n", act_band->loop->stmts[s]->writes[w]->name););
+									sica_access_is_new=0;
+									break;
+								}
+
+								if(check_comparison==ACCESS_IS_NOT_IDENTICAL){
+									IF_DEBUG(printf("[SICAALL] THIS WRITE ACCESS ON '%s' IS NEW!\n", act_band->loop->stmts[s]->writes[w]->name););
+									act_access_temp=act_access_temp->next;
+								}
+							}
+
+							//...IF NOT, add it to the linked list for this array and increase the counter ...DO THIS ONLY FOR THE INNERMOST DIMENSION OF EACH ARRAY
+							if(sica_access_is_new)    {
+                                for(it1=0;it1<act_band->sicadata->transwidth[s];it1++)  {
+                                    if(trans_access_mat[y][access_offset+it1]) {
+                                    IF_DEBUG(printf("[SICAALL] Statement %i has an innermost access on array %s from loop %i\n",s,act_band->loop->stmts[s]->writes[w]->name, it1););//act_band->sicadata->innermost_vec_accesses++;
+                                    //SICAALL: COUNT UP THE RESPECTIVE VALUE [statement][loop]!!!
+                                    act_band->sicadata->nb_accesses_on_dimALL[s][it1]++;
+                                    }
+                                }
+                                if(y==act_band->loop->stmts[s]->writes[w]->mat->alloc_nrows-1)  { //WHEN ACCESSING THE LAST DIMENSION, THE SYSTEM RECOGNIZES WHICH LOOPS ACCESS THE INNERMOST DIMENSION AND REGISTRATES THIS ACCESS IF IT HAS BEEN "NEW"
+                                    if(y>0)  {//IF THIS ACCESS IS INNERMOST AND IN AN MULTIDIMENSIONAL (dim>=2) ARRAY, OTHERWISE THERE ARE ANYWAY NO STRIDES
+                                        for(it2=0;it2<act_band->sicadata->transwidth[s];it2++)  {
+                                            if(trans_access_mat[y][access_offset+it2]) {
+                                            IF_DEBUG(printf("[SICAALL] Statement %i has an innermost access on array %s from loop %i\n",s,act_band->loop->stmts[s]->writes[w]->name, it2););//act_band->sicadata->innermost_vec_accesses++;
+                                            //SICAALL: COUNT UP THE RESPECTIVE VALUE [statement][loop]!!!
+                                            act_band->sicadata->nb_accesses_on_dimMDINNER[s][it2]++;
+                                            }
+                                        }
+                                    }
+
+                                    act_access_temp->nrows = act_band->loop->stmts[s]->writes[w]->mat->alloc_nrows;
+                                    act_access_temp->ncols = act_band->loop->stmts[s]->writes[w]->mat->alloc_ncols;
+
+
+                                    act_access_temp->next=sica_accesses_malloc();
+
+                                    act_access_temp->access_mat=sica_access_matrix_malloc(act_band->loop->stmts[s]->writes[w]->mat->alloc_nrows, act_band->loop->stmts[s]->writes[w]->mat->alloc_ncols);
+                                    sica_copy_access_matrix(act_access_temp->access_mat, trans_access_mat, act_band->loop->stmts[s]->writes[w]->mat->alloc_nrows, act_band->loop->stmts[s]->writes[w]->mat->alloc_ncols);
+                                    IF_DEBUG(printf("[SICAALL] ADDED WRITE ACCESS ON '%s'!\n", act_band->sicadata->id2arrayname[act_array_id]););
+
+                                    int new_bytes=0;
+                                    //IF THE DATA TYPE IS DEFINED
+                                    if(act_band->loop->stmts[s]->writes[w]->symbol->data_type)    {
+                                        IF_DEBUG(printf("[SICAALL] THIS ACCESS IS OF TYPE '%s'!\n", act_band->loop->stmts[s]->writes[w]->symbol->data_type););
+                                        //COUNT the bytes that have to be loaded for this access
+                                        new_bytes=sica_get_bytes_of_type(act_band->loop->stmts[s]->writes[w]->symbol->data_type);
+                                    } else {
+                                        printf("[SICAALL] WARNING: The datatype of an array was not recognized and therefore set to a DEFAULT VALUE: %i Bytes!\n", SICA_DEFAULT_DATA_BYTES);
+                                        new_bytes=SICA_DEFAULT_DATA_BYTES;
+                                    }
+                                    //[SICAALL] update the largest datatype if necessary
+                                    if(new_bytes>act_band->sicadata->largest_data_type[s]){
+                                        act_band->sicadata->largest_data_type[s]=new_bytes;
+                                    }
+                                    //[SICAALL] add the additional bytes
+                                    for(it1=0;it1<act_band->sicadata->transwidth[s];it1++)  {
+                                        if(trans_access_mat[y][access_offset+it1]) {
+                                            act_band->sicadata->nb_bytes_by_loop[s][it1]+=new_bytes;
+                                            IF_DEBUG(printf("[SICAALL] ADDING %i bytes for access on array %s by statement %i and loop %i\n", new_bytes, act_band->loop->stmts[s]->writes[w]->name,s,it1););
+                                        }
+                                    }
+								}
+							}
 						}
 
 			    	}
@@ -667,19 +943,52 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 			sica_stmts_in_scalar_dim=sica_stmts_in_scalar_dim->next;
     	}
 
-		    IF_DEBUG(printf("[SICA] There are %i accesses relevant for vectorization\n", act_band->sicadata->vec_accesses););
+		IF_DEBUG(printf("[SICA] There are %i accesses relevant for vectorization\n", act_band->sicadata->vec_accesses););
 
-		    IF_DEBUG(printf("[SICA] Print the accesses on arrays structure:\n"););
-		    IF_DEBUG(sica_print_array_accesses_structures(act_band, sica_accesses_on_array););
+		IF_DEBUG(printf("[SICA] Print the accesses on arrays structure:\n"););
+		IF_DEBUG(sica_print_array_accesses_structures(act_band, sica_accesses_on_array););
+
+
+        //[SICAALL] Print the counts
+        IF_DEBUG2(printf("[SICAALL] COLLECTED THE FOLLOWING COUNTS FOR MULTIDIMENSIONAL ARRAYS [Statement][Loop]\n"););
+        IF_DEBUG2(sica_print_matrix_with_coloffset(act_band->sicadata->nb_accesses_on_dimMDINNER,act_band->loop->nstmts,act_band->sicadata->transwidth[s],0););
+        IF_DEBUG2(printf("[SICAALL] COLLECTED THE FOLLOWING COUNTS FOR ANY ARRAY [Statement][Loop]\n"););
+        IF_DEBUG2(sica_print_matrix_with_coloffset(act_band->sicadata->nb_accesses_on_dimALL,act_band->loop->nstmts,act_band->sicadata->transwidth[s],0););
+
+        /****************************************************************
+         * [SICAALL] Printing out the collected information and decision
+         ****************************************************************/
+
+        if(!act_band->sicadata->isvec)    {
+        //Get the highest counted multi-dimensional accessing loop
+        int highest_count=-1;//0;
+        int accesses_count=-1;
+        int statement=-1;
+        int loop=-1;
+        for(it1=0;it1<act_band->loop->nstmts;it1++)  {
+            statement=it1;
+            highest_count=-1;
+            for(it2=0;it2<act_band->sicadata->transwidth[s];it2++)  {
+                if(act_band->sicadata->nb_accesses_on_dimMDINNER[it1][it2]>highest_count) {
+                    //SICAALL: COUNT UP THE RESPECTIVE VALUE [statement][loop]!!!
+                    highest_count=act_band->sicadata->nb_accesses_on_dimMDINNER[it1][it2];
+                    loop=it2;
+                    accesses_count=act_band->sicadata->nb_accesses_on_dimALL[it1][it2];
+                    /**[SICAALL] Contemporarily use the data-structures from the vectorized bands**/
+                    act_band->sicadata->vec_accesses=accesses_count;
+                    act_band->sicadata->bytes_per_vecit[it1]=act_band->sicadata->nb_bytes_by_loop[it1][it2];
+                    act_band->sicadata->vecrow=loop;
+                    }
+                }
+                printf("[SICAALL] For statement %i loop %i with highest count %i and %i bytes per iteration is chosen\n", statement,loop,highest_count,act_band->sicadata->nb_bytes_by_loop[statement][loop]);
+            }
 
 	    } /* End of loop across the arrays */
 	    //get the PluTo defined data types + (null)->default and calculate the tile quantities
+	    }
 
 	    //NOW LOOK UP HOW MANY ACCESSES OF WHICH TYPE ARE AVAILABLE
 
-
-
-		///////////////////////////////////////////////
 }
 
 

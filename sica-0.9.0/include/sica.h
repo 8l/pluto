@@ -22,13 +22,13 @@ typedef struct sica_matrix SICAMatrix;
 /* [SICA] structure for SICA necessary data */
 struct sica_data{
 	int isvec;			//is the band vectorizable?
-	
+
     int vecloop; 			//vectorized loop t%i
     int vecrow; 			//row in tile_sizes related to vectorized loop t%i
-    
+
     int* sical1size; 			//l1 tile size for vectorized loop for each statement
     int sical2size; 			//l2 tile size for outermost loop, same for each statement as it is only hardware related
-    
+
     int *upperboundoffset; 		//offsetarray for each statement for retiling upper bound (this depends on transformation matrix),
 					//as this is modified in the process, this backup is needed
 
@@ -59,6 +59,12 @@ struct sica_data{
     int *coloffset;
 
     int *scalar_dims;			//array containing the scalar dimension for each statement
+
+    //Elements for SICAALL
+    int **nb_accesses_on_dimMDINNER;  //nb_accesses_on_dim[s][i]: number of innermost accesses of statements s from "loop" i
+    int **nb_accesses_on_dimALL;      //nb_accesses_on_dim[s][i]: number of any accesses of statements s from "loop" i
+    int **nb_bytes_by_loop;           //nb_bytes_by_loop[s][i]:   number of bytes needed of statements s from "loop" i
+
 };
 typedef struct sica_data SICAData;
 

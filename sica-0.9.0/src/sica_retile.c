@@ -15,14 +15,14 @@
 
 #include "sica_retile.h"
 
-/* Manipulates statement domain and transformation to tile scattering 
+/* Manipulates statement domain and transformation to tile scattering
  * dimensions from firstD to lastD */
 void sica_retile_band(PlutoProg *prog, Band *band, int offset)
 {
     IF_DEBUG(      printf("[SICA] Performing ");      );
-	IF_DEBUG(if(band->sicadata->isvec){printf("VECTORIZED");}else{printf("VECTORIZED");});
+	IF_DEBUG(if(band->sicadata->isvec){printf("VECTORIZED");}else{printf("NON-VECTORIZED");});
     IF_DEBUG(      printf(" sica_retile_band step\n");  );
-	
+
     int j, s;
     int npar;
 
@@ -32,7 +32,7 @@ void sica_retile_band(PlutoProg *prog, Band *band, int offset)
     int lastD = band->loop->depth+band->width-1;
 
     IF_DEBUG2(printf("\n\n[SICA] firstD=%i lastD=%i for the following transformation\n",firstD,lastD););
-    
+
     for (s=0; s<band->loop->nstmts; s++) {
 
         int tile_sizes[prog->num_hyperplanes];
@@ -95,20 +95,20 @@ for(dim=0;dim<sica_dimensions2tile;dim++)    {
 
     /* Re-detect hyperplane types (H_SCALAR, H_LOOP) */
     pluto_detect_hyperplane_types(prog);
-    
+
 }
 
 /* Tiles scattering functions for all bands; l2=1 => perform l2 tiling */
 void sica_retile_scattering_dims(PlutoProg *prog, Band **bands, int nbands, int l2)
 {
 //	printf("[SICA] Performing sica_retile_scattering_dims step\n");
-	
+
     int b;
 
     IF_DEBUG(printf("[SICA] SICA modification for band number %i\n",b); );
 
     for (b=0; b<nbands; b++) {
-    	
+
         if (l2) {
             sica_retile_band(prog, bands[b], 0);
         }else{

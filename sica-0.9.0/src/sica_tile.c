@@ -24,7 +24,7 @@
 #include "sica_tilesizes.h"
 #include "sica_math_func.h"
 
-/* Manipulates statement domain and transformation to tile scattering 
+/* Manipulates statement domain and transformation to tile scattering
  * dimensions from firstD to lastD */
 void sica_tile_band(PlutoProg *prog, Band *band, int *tile_sizes)
 {
@@ -40,14 +40,14 @@ void sica_tile_band(PlutoProg *prog, Band *band, int *tile_sizes)
     for (depth=firstD; depth<=lastD; depth++)    {
         for (s=0; s<band->loop->nstmts; s++) {
             Stmt *stmt = band->loop->stmts[s];
-            /* 1. Specify tiles in the original domain. 
+            /* 1. Specify tiles in the original domain.
              * NOTE: tile shape info comes in here */
 
             /* 1.1 Add additional dimensions */
             char iter[6];
             sprintf(iter, "zT%d", stmt->dim);
 
-            int hyp_type = (stmt->hyp_types[depth + depth - firstD] == H_SCALAR)? H_SCALAR: 
+            int hyp_type = (stmt->hyp_types[depth + depth - firstD] == H_SCALAR)? H_SCALAR:
                 H_TILE_SPACE_LOOP;
 
             /* 1.2 Specify tile shapes in the original domain */
@@ -55,7 +55,7 @@ void sica_tile_band(PlutoProg *prog, Band *band, int *tile_sizes)
             int num_domain_supernodes = 0;
             if (hyp_type != H_SCALAR) {
                 assert(tile_sizes[depth-firstD] >= 1);
-		
+
 		/* [SICA] count the really tiled dimensions */
 		band->sicadata->tilewidth[s]++;
 
@@ -68,17 +68,17 @@ void sica_tile_band(PlutoProg *prog, Band *band, int *tile_sizes)
                 pluto_constraints_add_inequality(stmt->domain);
 
                 for (j=num_domain_supernodes+1; j<stmt->dim+npar; j++) {
-                    stmt->domain->val[stmt->domain->nrows-1][j] = 
+                    stmt->domain->val[stmt->domain->nrows-1][j] =
                         stmt->trans->val[firstD+(depth-firstD)+1+(depth-firstD)][j];
                 }
 
-                stmt->domain->val[stmt->domain->nrows-1][num_domain_supernodes] = 
+                stmt->domain->val[stmt->domain->nrows-1][num_domain_supernodes] =
                     -tile_sizes[depth-firstD];
 
-                stmt->domain->val[stmt->domain->nrows-1][stmt->domain->ncols-1] = 
+                stmt->domain->val[stmt->domain->nrows-1][stmt->domain->ncols-1] =
                     stmt->trans->val[(depth-firstD)+1+depth][stmt->dim+prog->npar];
 
-                PlutoConstraints *lb = pluto_constraints_select_row(stmt->domain, 
+                PlutoConstraints *lb = pluto_constraints_select_row(stmt->domain,
                         stmt->domain->nrows-1);
                 pluto_update_deps(stmt, lb, prog);
                 pluto_constraints_free(lb);
@@ -86,19 +86,19 @@ void sica_tile_band(PlutoProg *prog, Band *band, int *tile_sizes)
                 /* Upper bound */
                 pluto_constraints_add_inequality(stmt->domain);
                 for (j=num_domain_supernodes+1; j<stmt->dim+npar; j++) {
-                    stmt->domain->val[stmt->domain->nrows-1][j] = 
+                    stmt->domain->val[stmt->domain->nrows-1][j] =
                         -stmt->trans->val[firstD+(depth-firstD)+1+(depth-firstD)][j];
                 }
 
-                stmt->domain->val[stmt->domain->nrows-1][num_domain_supernodes] 
+                stmt->domain->val[stmt->domain->nrows-1][num_domain_supernodes]
                     = tile_sizes[depth-firstD];
 
-                stmt->domain->val[stmt->domain->nrows-1][stmt->domain->ncols-1] = 
-                    -stmt->trans->val[(depth-firstD)+1+depth][stmt->dim+prog->npar] 
+                stmt->domain->val[stmt->domain->nrows-1][stmt->domain->ncols-1] =
+                    -stmt->trans->val[(depth-firstD)+1+depth][stmt->dim+prog->npar]
                     +tile_sizes[depth-firstD]-1;
-                
+
                 /* [SICA] store the upper bound offset for the retiling (as this value can be changed in the intermediate steps) */
-                /* [SICA] ToDo: Check wheather it is OK not to distinguish between L1 and L2 tiling but just taking the last (overwritten) value */ 
+                /* [SICA] ToDo: Check wheather it is OK not to distinguish between L1 and L2 tiling but just taking the last (overwritten) value */
                 band->sicadata->upperboundoffset[s]=-stmt->trans->val[(depth-firstD)+1+depth][stmt->dim+prog->npar];
                 IF_DEBUG(printf("[SICA] Setting upper bound offset to %i\n", band->sicadata->upperboundoffset[s]););
 
@@ -117,12 +117,12 @@ void sica_tile_band(PlutoProg *prog, Band *band, int *tile_sizes)
 
             }else{
                 /* Scattering function for tile space iterator is set the
-                 * same as its associated domain iterator  
+                 * same as its associated domain iterator
                  * Dimension is not a loop; tile it trivially
                  */
                 pluto_stmt_add_hyperplane(stmt, H_SCALAR, depth);
                 for (j=0; j<stmt->dim+npar+1; j++) {
-                    stmt->trans->val[depth][j] = 
+                    stmt->trans->val[depth][j] =
                         stmt->trans->val[firstD+(depth-firstD)+1+(depth-firstD)][j];
                 }
             }
@@ -158,13 +158,19 @@ void sica_tile_band(PlutoProg *prog, Band *band, int *tile_sizes)
 
 /* Updates the statement domains and transformations to represent the new
  * tiled code. A schedule of tiles is created for parallel execution if
- * --parallel is on 
+ * --parallel is on
  *
  *  Pre-vectorization is also done inside a tile
  *
  *  */
 void sica_tile(PlutoProg *prog)
 {
+
+    if(atoi(getenv("SICAALL")))  {
+    printf("!!!!!!!!!!!!!!!!!!!!!Applying SICA-ALL!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    } else {
+    printf("!!!!!!!!!!!!!!!!!!!!!Applying SICA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    }
 
     IF_DEBUG(print_all_cache_information());
 
@@ -189,10 +195,10 @@ void sica_tile(PlutoProg *prog)
     bands = pluto_get_outermost_permutable_bands(prog, &nbands);
     IF_DEBUG(printf("Outermost tilable bands\n"););
     IF_DEBUG(pluto_bands_print(bands, nbands););
-    
+
     /* [SICA] allocate and initialize the SICAData memory on each band */
     sica_malloc_and_init_sicadata(bands, nbands);
-    
+
     /* Now, we are ready to tile */
     if (options->lt >= 0 && options->ft >= 0)   {
         /* User option specified tiling */
@@ -219,7 +225,7 @@ void sica_tile(PlutoProg *prog)
     if (options->intratileopt) {
         int retval = 0;
         for (i=0; i<nbands; i++) {
-            retval |= pluto_intra_tile_optimize_band(bands[i], 1, prog); 
+            retval |= pluto_intra_tile_optimize_band(bands[i], 1, prog);
         }
         if (retval) pluto_detect_transformation_properties(prog);
         if (retval && !options->silent) {
@@ -241,7 +247,7 @@ void sica_tile(PlutoProg *prog)
         int retval = 0;
         for (i=0; i<nbands; i++) {
             int num_tiling_levels = options->tile + options->l2tile;
-            retval |= sica_pre_vectorize_band(bands[i], num_tiling_levels, prog); 
+            retval |= sica_pre_vectorize_band(bands[i], num_tiling_levels, prog);
         }
         if (retval) pluto_detect_transformation_properties(prog);
         if (retval && !options->silent) {
@@ -269,10 +275,10 @@ void sica_tile(PlutoProg *prog)
     	        //printf("VEC\tbands[%i], nstmts=%i\n", i, act_band->loop->nstmts);
     		    if(act_band->sicadata->vec_accesses>0)    {
         	  	    IF_DEBUG(printf("[SICA] vectorized accesses in this band: %i\n", act_band->sicadata->vec_accesses););
-            	    printf("[SICA] percentage of INNERMOST vectorized accesses: %.2f\n", 100.0*(float)act_band->sicadata->innermost_vec_accesses/(float)act_band->sicadata->vec_accesses);
+            	    printf("[SICA] %i percentage of INNERMOST vectorized accesses: %.2f\n", s, 100.0*(float)act_band->sicadata->innermost_vec_accesses/(float)act_band->sicadata->vec_accesses);
             	    IF_DEBUG(printf("[SICA] bytes to be loaded by the vectorized accesses: %i Bytes\n", act_band->sicadata->bytes_per_vecit[s]););
 
-    		    sica_get_l1size(act_band->sicadata, sica_hardware, act_band->loop->nstmts); // [SICA] THE FUNCTION THAT CALCULATES THE SICA L1 SIZES FOR THAT BAND
+    		    sica_get_l1size(act_band->sicadata, sica_hardware, s);//act_band->loop->nstmts); // [SICA] THE FUNCTION THAT CALCULATES THE SICA L1 SIZES FOR THAT BAND
     		    act_band->sicadata->sical2size=sica_get_l2size(sica_hardware);  // [SICA] THE FUNCTION THAT CALCULATES THE GLOBAL L2 SIZE
 
     	        printf("[SICA] tile sizes for band %i -> Level-1: %i, Level-2: %i\n\n",i,act_band->sicadata->sical1size[s], act_band->sicadata->sical2size );
@@ -287,6 +293,32 @@ void sica_tile(PlutoProg *prog)
     		}
 
 
+    	} else if(atoi(getenv("SICAALL"))){
+            printf("[SICAALL] Setting tile sizes for un-vectorized Band!\n");
+
+    	    int s;
+    	    for(s=0; s<act_band->loop->nstmts;s++)    {
+    	        //printf("VEC\tbands[%i], nstmts=%i\n", i, act_band->loop->nstmts);
+    		    if(act_band->sicadata->bytes_per_vecit[s]>0)    {
+    		                    printf("STATEMENT %i in this Band IS_VEC", s);
+
+        	  	    printf("[SICAALL] vectorized accesses in this band: %i\n", act_band->sicadata->vec_accesses);
+            	    printf("[SICAALL] bytes to be loaded by the vectorized accesses: %i Bytes\n", act_band->sicadata->bytes_per_vecit[s]);
+
+    		    sica_get_l1size(act_band->sicadata, sica_hardware, s);//TEMP: act_band->loop->nstmts); // [SICA] THE FUNCTION THAT CALCULATES THE SICA L1 SIZES FOR THAT BAND
+    		    act_band->sicadata->sical2size=sica_get_l2size(sica_hardware);  // [SICA] THE FUNCTION THAT CALCULATES THE GLOBAL L2 SIZE
+
+    	        printf("[SICA] tile sizes for band %i -> Level-1: %i, Level-2: %i\n\n",i,act_band->sicadata->sical1size[s], act_band->sicadata->sical2size );
+                act_band->sicadata->isvec=1; /**[SICAALL] Contemporary trick the system to perform the retile step from our vectorization add-on **/
+    		    } else {
+    		    printf("STATEMENT %i in this Band IS_NOT_VEC",s);
+        		    act_band->sicadata->sical1size[s]=1;
+        		    act_band->sicadata->sical2size=1;
+
+            	    printf("[SICA] NO vectorized access\n");
+        	        printf("[SICA] tile sizes for band %i -> Level-1: %i, Level-2: %i\n\n",i,act_band->sicadata->sical1size[s], act_band->sicadata->sical2size );
+    		    }
+    		}
     	}
     }
 

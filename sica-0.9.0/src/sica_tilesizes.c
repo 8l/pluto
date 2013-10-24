@@ -20,11 +20,11 @@
 #include "sica_tilesizes.h"
 
 void sica_get_l1size(SICAData* sicadata, SICAHardware* sicahardware, int nstmts)    {
-int s;
-	for(s=0; s<nstmts; s++)    {
+int s=nstmts;//TEMP: RECENT STATEMENT
+//	for(s=0; s<nstmts; s++)    {
 	int l1tilesize;
 
-	IF_DEBUG(printf("[SICA] Largest datatype for this band: %i\n", sicadata->largest_data_type[s]););
+	printf("[SICA] Largest datatype for this band: %i and statement %i\n", sicadata->largest_data_type[s],s);
 
 	//get the theoretical cache fitting quantity
 	l1tilesize=(int)(sicahardware->ratio*(float)((sicahardware->l1cachesize*1024)/sicadata->bytes_per_vecit[s]));
@@ -34,18 +34,17 @@ int s;
 	//get the regsize-floor related to the largest available datatype in this band
 	int regsizeinelements=(sicahardware->regsize/8)/(sicadata->largest_data_type[s]);
 
-	IF_DEBUG(printf("[SICA] %i elements fit to the register and SCALAR DIM %i\n", regsizeinelements););
+	IF_DEBUG(printf("[SICA] %i elements fit to the register\n", regsizeinelements););
 
 	l1tilesize=(int)(l1tilesize/regsizeinelements)*regsizeinelements;
-
-	if(sicadata->largest_data_type[s]<0)    {
-		//printf("There is not scalar dimension %i in this band\n", s);
-		l1tilesize=0;
-	}
+//	if(sicadata->largest_data_type[s]<0)    {
+//		//printf("There is not scalar dimension %i in this band\n", s);
+//		l1tilesize=0;
+//	}
 
 	sicadata->sical1size[s]=l1tilesize;
 
-	}
+//	}
 }
 
 int sica_get_l2size(SICAHardware* sicahardware)    {
