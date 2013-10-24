@@ -76,8 +76,8 @@ PlutoConstraints *normalize_domain_schedule(Stmt *stmt, PlutoProg *prog)
  * Output schedules are isl relations that have dims in the order
  * isl_dim_out, isl_dim_in, div, param, const
  */
-__isl_give isl_union_map *pluto_schedule(isl_union_set *domains, 
-        isl_union_map *dependences, 
+__isl_give isl_union_map *pluto_schedule(isl_union_set *domains,
+        isl_union_map *dependences,
         PlutoOptions *options_l)
 {
     int i, j, nbands, n_ibands, retval;
@@ -165,7 +165,7 @@ __isl_give isl_union_map *pluto_schedule(isl_union_set *domains,
     pluto_bands_print(ibands, n_ibands);
 
     if (options->tile) {
-        if (atoi(getenv ("ISSICA")))  {
+        if (getenv ("ISSICA"))  {
             printf ("Applying SICA!\n");
             sica_tile(prog);
         } else {
@@ -173,7 +173,7 @@ __isl_give isl_union_map *pluto_schedule(isl_union_set *domains,
             pluto_tile(prog);
         }
     }else{
-        int retval = pluto_intra_tile_optimize(prog, 0); 
+        int retval = pluto_intra_tile_optimize(prog, 0);
         if (retval) {
             /* Detect properties again */
             pluto_detect_transformation_properties(prog);
@@ -233,7 +233,7 @@ __isl_give isl_union_map *pluto_schedule(isl_union_set *domains,
         // pluto_constraints_print(stdout, sched);
 
         bmap = isl_basic_map_from_pluto_constraints(ctx, sched,
-                sched->ncols - stmt->trans->nrows - prog->npar - 1, 
+                sched->ncols - stmt->trans->nrows - prog->npar - 1,
                 stmt->trans->nrows, prog->npar);
         bmap = isl_basic_map_project_out(bmap, isl_dim_in, 0, sched->ncols - stmt->trans->nrows - stmt->domain->ncols);
         char name[20];
