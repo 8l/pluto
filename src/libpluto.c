@@ -24,10 +24,6 @@
 #include "pluto/libpluto.h"
 #include "isl/map.h"
 
-#include "sica_post_transform.h"
-#include "sica_tile.h"
-#include "sica_tilesizes.h"
-
 PlutoOptions *options;
 
 /*
@@ -164,12 +160,14 @@ __isl_give isl_union_map *pluto_schedule(isl_union_set *domains,
     printf("Innermost tilable bands: %d bands\n", n_ibands);
     pluto_bands_print(ibands, n_ibands);
 
-    /* [SICA] Apply different tiling options */
-    if (options->sica)    { /* apply [SICA] tiling */
-        printf("[SICA] Apply SICA tiling\n\n");
-        sica_tile(prog);
-    }else if (options->tile) { /* apply original tiling */
-        pluto_tile(prog);
+    if (options->tile) {
+        if (atoi(getenv ("ISSICA")))  {
+            printf ("Applying SICA!\n");
+            sica_tile(prog);
+        } else {
+            printf ("Applying PLUTO!\n");
+            pluto_tile(prog);
+        }
     }else{
         int retval = pluto_intra_tile_optimize(prog, 0); 
         if (retval) {
@@ -255,4 +253,3 @@ __isl_give isl_union_map *pluto_schedule(isl_union_set *domains,
 
     return schedules;
 }
-
