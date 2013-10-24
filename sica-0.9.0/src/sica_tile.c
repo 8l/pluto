@@ -167,9 +167,9 @@ void sica_tile(PlutoProg *prog)
 {
 
     if(atoi(getenv("SICAALL")))  {
-    printf("!!!!!!!!!!!!!!!!!!!!!Applying SICA-ALL!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("Applying SICA-ALL!\n");
     } else {
-    printf("!!!!!!!!!!!!!!!!!!!!!Applying SICA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("Applying SICA!\n");
     }
 
     IF_DEBUG(print_all_cache_information());
@@ -300,23 +300,21 @@ void sica_tile(PlutoProg *prog)
     	    for(s=0; s<act_band->loop->nstmts;s++)    {
     	        //printf("VEC\tbands[%i], nstmts=%i\n", i, act_band->loop->nstmts);
     		    if(act_band->sicadata->bytes_per_vecit[s]>0)    {
-    		                    printf("STATEMENT %i in this Band IS_VEC", s);
+    		        IF_DEBUG(printf("STATEMENT %i in this Band IS_VEC", s););
+            	    IF_DEBUG(printf("[SICAALL] bytes to be loaded by the strided accesses: %i Bytes\n", act_band->sicadata->bytes_per_vecit[s]););
 
-        	  	    printf("[SICAALL] vectorized accesses in this band: %i\n", act_band->sicadata->vec_accesses);
-            	    printf("[SICAALL] bytes to be loaded by the vectorized accesses: %i Bytes\n", act_band->sicadata->bytes_per_vecit[s]);
+                    sica_get_l1size(act_band->sicadata, sica_hardware, s);//TEMP: act_band->loop->nstmts); // [SICA] THE FUNCTION THAT CALCULATES THE SICA L1 SIZES FOR THAT BAND
+                    act_band->sicadata->sical2size=sica_get_l2size(sica_hardware);  // [SICA] THE FUNCTION THAT CALCULATES THE GLOBAL L2 SIZE
 
-    		    sica_get_l1size(act_band->sicadata, sica_hardware, s);//TEMP: act_band->loop->nstmts); // [SICA] THE FUNCTION THAT CALCULATES THE SICA L1 SIZES FOR THAT BAND
-    		    act_band->sicadata->sical2size=sica_get_l2size(sica_hardware);  // [SICA] THE FUNCTION THAT CALCULATES THE GLOBAL L2 SIZE
-
-    	        printf("[SICA] tile sizes for band %i -> Level-1: %i, Level-2: %i\n\n",i,act_band->sicadata->sical1size[s], act_band->sicadata->sical2size );
-                act_band->sicadata->isvec=1; /**[SICAALL] Contemporary trick the system to perform the retile step from our vectorization add-on **/
+                    printf("[SICA] tile sizes for band %i -> Level-1: %i, Level-2: %i\n\n",i,act_band->sicadata->sical1size[s], act_band->sicadata->sical2size );
+                    act_band->sicadata->isvec=1; /**[SICAALL] Contemporary trick the system to perform the retile step from our vectorization add-on **/
     		    } else {
-    		    printf("STATEMENT %i in this Band IS_NOT_VEC",s);
+                    IF_DEBUG(printf("STATEMENT %i in this Band IS_NOT_VEC",s););
         		    act_band->sicadata->sical1size[s]=1;
         		    act_band->sicadata->sical2size=1;
 
-            	    printf("[SICA] NO vectorized access\n");
-        	        printf("[SICA] tile sizes for band %i -> Level-1: %i, Level-2: %i\n\n",i,act_band->sicadata->sical1size[s], act_band->sicadata->sical2size );
+            	    IF_DEBUG(printf("[SICA] NO strided access\n"););
+        	        IF_DEBUG(printf("[SICA] tile sizes for band %i -> Level-1: %i, Level-2: %i\n\n",i,act_band->sicadata->sical1size[s], act_band->sicadata->sical2size ););
     		    }
     		}
     	}

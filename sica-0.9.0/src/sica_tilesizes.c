@@ -24,7 +24,7 @@ int s=nstmts;//TEMP: RECENT STATEMENT
 //	for(s=0; s<nstmts; s++)    {
 	int l1tilesize;
 
-	printf("[SICA] Largest datatype for this band: %i and statement %i\n", sicadata->largest_data_type[s],s);
+	IF_DEBUG(printf("[SICA] Largest datatype for this band: %i and statement %i\n", sicadata->largest_data_type[s],s););
 
 	//get the theoretical cache fitting quantity
 	l1tilesize=(int)(sicahardware->ratio*(float)((sicahardware->l1cachesize*1024)/sicadata->bytes_per_vecit[s]));
