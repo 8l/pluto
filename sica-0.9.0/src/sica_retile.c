@@ -103,11 +103,11 @@ void sica_retile_scattering_dims(PlutoProg *prog, Band **bands, int nbands, int 
 {
 //	printf("[SICA] Performing sica_retile_scattering_dims step\n");
 
-    int b;
-
-    IF_DEBUG(printf("[SICA] SICA modification for band number %i\n",b); );
+    int b=0;
 
     for (b=0; b<nbands; b++) {
+
+        IF_DEBUG(printf("[SICA] SICA modification for band number %i\n",b); );
 
         if (l2) {
             sica_retile_band(prog, bands[b], 0);

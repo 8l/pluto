@@ -15,7 +15,7 @@
 
 int estimate_sse_version(int* simd_vers)
 {
-int version_number;
+int version_number=0;
 int i;
 int count=0;
 
@@ -44,10 +44,10 @@ int get_hardware_cache_infos(int option)
 	// if the given option is not legal, this functions returns the negative
 	// value -1, otherwise the wanted value
 	/* List of Options:
-         * CPU_ID CPU_NAME 
-         * SSE_ID SSE_NAME 
-         * L1CACHE_SIZE L1CACHE_ASSO L1CACHE_LINE 
-         * L2CACHE_SIZE L2CACHE_ASSO L2CACHE_LINE 
+         * CPU_ID CPU_NAME
+         * SSE_ID SSE_NAME
+         * L1CACHE_SIZE L1CACHE_ASSO L1CACHE_LINE
+         * L2CACHE_SIZE L2CACHE_ASSO L2CACHE_LINE
          * L3CACHE_SIZE L3CACHE_ASSO L3CACHE_LINE
 	 */
 
@@ -63,7 +63,7 @@ int get_hardware_cache_infos(int option)
 	  * [6] - AVX
 	  */
 
-	 int cpu_fam=0; 
+	 int cpu_fam=0;
 	 /*
 	  * integer to identify processor family
 	  * 0 - unknown

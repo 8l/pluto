@@ -96,7 +96,7 @@ int sica_compare_access_matrices(int** matrix1, int** matrix2, int rows, int col
 int sica_check_for_entry(int** matrix, int rows, int cols)    {
 	int x,y;
 
-	int entry_sum=0;
+	//int entry_sum=0;
 
    	for(y=0;y<rows;y++)    {
    		for(x=0;x<cols;x++)    {
