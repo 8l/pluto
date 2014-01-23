@@ -165,7 +165,7 @@ __isl_give isl_union_map *pluto_schedule(isl_union_set *domains,
     pluto_bands_print(ibands, n_ibands);
 
     if (options->tile) {
-        if (getenv ("ISSICA"))  {
+        if (getenv ("USESICA"))  {
             printf ("Applying SICA!\n");
             sica_tile(prog);
         } else {
