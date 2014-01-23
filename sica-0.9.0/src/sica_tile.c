@@ -270,20 +270,29 @@ void sica_tile(PlutoProg *prog)
     	        //printf("VEC\tbands[%i], nstmts=%i\n", i, act_band->loop->nstmts);
     		    if(act_band->sicadata->vec_accesses>0)    {
         	  	    IF_DEBUG(printf("[SICA] vectorized accesses in this band: %i\n", act_band->sicadata->vec_accesses););
-            	    printf("[SICA] %i percentage of INNERMOST vectorized accesses: %.2f\n", s, 100.0*(float)act_band->sicadata->innermost_vec_accesses/(float)act_band->sicadata->vec_accesses);
+            	    printf("[SICA] Statement %i: %.2f percent of the vectorized accesses are INNERMOST\n", s, 100.0*(float)act_band->sicadata->innermost_vec_accesses/(float)act_band->sicadata->vec_accesses);
             	    IF_DEBUG(printf("[SICA] bytes to be loaded by the vectorized accesses: %i Bytes\n", act_band->sicadata->bytes_per_vecit[s]););
 
     		    sica_get_l1size(act_band->sicadata, sica_hardware, s);//act_band->loop->nstmts); // [SICA] THE FUNCTION THAT CALCULATES THE SICA L1 SIZES FOR THAT BAND
     		    act_band->sicadata->sical2size=sica_get_l2size(sica_hardware);  // [SICA] THE FUNCTION THAT CALCULATES THE GLOBAL L2 SIZE
 
-    	        printf("[SICA] tile sizes for band %i -> Level-1: %i, Level-2: %i\n\n",i,act_band->sicadata->sical1size[s], act_band->sicadata->sical2size );
+    	        printf("[SICA] tile sizes for band %i -> Level-1: %i",i,act_band->sicadata->sical1size[s]);
+                if(options->l2tile)  {
+                    printf(", Level-2: %i\n\n", act_band->sicadata->sical2size );
+                }
+                printf("\n\n");
+
 
     		    } else {
         		    act_band->sicadata->sical1size[s]=1;
         		    act_band->sicadata->sical2size=1;
 
             	    printf("[SICA] NO vectorized access\n");
-        	        printf("[SICA] tile sizes for band %i -> Level-1: %i, Level-2: %i\n\n",i,act_band->sicadata->sical1size[s], act_band->sicadata->sical2size );
+    	            printf("[SICA] tile sizes for band %i -> Level-1: %i",i,act_band->sicadata->sical1size[s]);
+                    if(options->l2tile)  {
+                        printf(", Level-2: %i\n\n", act_band->sicadata->sical2size );
+                    }
+                    printf("\n\n");
     		    }
     		}
 
