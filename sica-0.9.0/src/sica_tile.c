@@ -165,13 +165,6 @@ void sica_tile_band(PlutoProg *prog, Band *band, int *tile_sizes)
  *  */
 void sica_tile(PlutoProg *prog)
 {
-
-    /*if(getenv("SICAALL"))  {
-    printf("Applying SICA-ALL!\n");
-    } else {
-    printf("Applying SICA!\n");
-    }*/
-
     printf("Applying SICA-EXTENSION!\n");
 
     IF_DEBUG(print_all_cache_information());
@@ -295,7 +288,7 @@ void sica_tile(PlutoProg *prog)
     		}
 
 
-    	} else /*if(getenv("SICAALL"))*/{
+    	} else if(!getenv("NOSICAALL")){
             printf("[SICAALL] Setting tile sizes for un-vectorized Band!\n");
 
     	    int s;
