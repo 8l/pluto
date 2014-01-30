@@ -1,6 +1,7 @@
 /**
  * @file mathhelp.h
  * @author dfeld
+ * @remark the 'dec2bin' implementation is based on a code that is widely spread among the internet 
  * Created on: 31.01.2013
  */
 
