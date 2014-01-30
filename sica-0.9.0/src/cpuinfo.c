@@ -3,6 +3,8 @@
  *
  *  Created on: 31.01.2013
  *      Author: dfeld
+ *
+ * @remark the 'cpuid makro' that is used is widely spread among the internet 
  */
 
 #include "cpuinfo.h"
