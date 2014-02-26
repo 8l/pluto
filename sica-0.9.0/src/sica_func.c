@@ -365,7 +365,7 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 	    	IF_DEBUG2(printf("[SICA] stmt=%i: nreads=%i\n", s, act_band->loop->stmts[s]->nreads););
 		    for(r=0;r<act_band->loop->stmts[s]->nreads;r++)
 		    {
-		    	IF_DEBUG2(printf("[SICA] read=%i, id: %i, name=%s, type=%s\n", r, sica_get_array_id(act_band, act_band->loop->stmts[s]->reads[r]->name), act_band->loop->stmts[s]->reads[r]->name, act_band->loop->stmts[s]->reads[r]->symbol->data_type););
+//T		    	IF_DEBUG2(printf("[SICA] read=%i, id: %i, name=%s, type=%s\n", r, sica_get_array_id(act_band, act_band->loop->stmts[s]->reads[r]->name), act_band->loop->stmts[s]->reads[r]->name, act_band->loop->stmts[s]->reads[r]->symbol->data_type););
 		    	IF_DEBUG2(pluto_matrix_print(stdout, act_band->loop->stmts[s]->reads[r]->mat););
 
 		    	//get the access matrix offset caused by tiling dimensions
@@ -499,14 +499,14 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 
 								int new_bytes=0;
 								//IF THE DATA TYPE IS DEFINED
-								if(act_band->loop->stmts[s]->reads[r]->symbol->data_type)    {
-								IF_DEBUG(printf("[SICA] THIS ACCESS IS OF TYPE '%s'!\n", act_band->loop->stmts[s]->reads[r]->symbol->data_type););
-								//COUNT the bytes that have to be loaded for this access
-								new_bytes=sica_get_bytes_of_type(act_band->loop->stmts[s]->reads[r]->symbol->data_type);
-								} else {
+//T								if(act_band->loop->stmts[s]->reads[r]->symbol->data_type)    {
+//T								IF_DEBUG(printf("[SICA] THIS ACCESS IS OF TYPE '%s'!\n", act_band->loop->stmts[s]->reads[r]->symbol->data_type););
+//T								//COUNT the bytes that have to be loaded for this access
+//T								new_bytes=sica_get_bytes_of_type(act_band->loop->stmts[s]->reads[r]->symbol->data_type);
+//T								} else {
 									printf("[SICA] WARNING: The datatype of an array was not recognized and therefore set to a DEFAULT VALUE: %i Bytes!\n", SICA_DEFAULT_DATA_BYTES);
 									new_bytes=SICA_DEFAULT_DATA_BYTES;
-								}
+//T								}
 								//[SICA] update the largest datatype if necessary
 								if(new_bytes>act_band->sicadata->largest_data_type[s]){
 									act_band->sicadata->largest_data_type[s]=new_bytes;
@@ -609,14 +609,14 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 
                                     int new_bytes=0;
                                     //IF THE DATA TYPE IS DEFINED
-                                    if(act_band->loop->stmts[s]->reads[r]->symbol->data_type)    {
-                                        IF_DEBUG(printf("[SICAALL] THIS ACCESS IS OF TYPE '%s'!\n", act_band->loop->stmts[s]->reads[r]->symbol->data_type););
-                                        //COUNT the bytes that have to be loaded for this access
-                                        new_bytes=sica_get_bytes_of_type(act_band->loop->stmts[s]->reads[r]->symbol->data_type);
-                                    } else {
+//T                                    if(act_band->loop->stmts[s]->reads[r]->symbol->data_type)    {
+//T                                        IF_DEBUG(printf("[SICAALL] THIS ACCESS IS OF TYPE '%s'!\n", act_band->loop->stmts[s]->reads[r]->symbol->data_type););
+//T                                        //COUNT the bytes that have to be loaded for this access
+//T                                        new_bytes=sica_get_bytes_of_type(act_band->loop->stmts[s]->reads[r]->symbol->data_type);
+//T                                    } else {
                                         printf("[SICAALL] WARNING: The datatype of an array was not recognized and therefore set to a DEFAULT VALUE: %i Bytes!\n", SICA_DEFAULT_DATA_BYTES);
                                         new_bytes=SICA_DEFAULT_DATA_BYTES;
-                                    }
+//T                                   }
                                     //[SICAALL] update the largest datatype if necessary
                                     if(new_bytes>act_band->sicadata->largest_data_type[s]){
                                         act_band->sicadata->largest_data_type[s]=new_bytes;
@@ -656,7 +656,7 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 	    	IF_DEBUG2(printf("[SICA] stmt=%i: nwrites=%i\n", s, act_band->loop->stmts[s]->nwrites););
 		    for(w=0;w<act_band->loop->stmts[s]->nwrites;w++)
 		    {
-		    	IF_DEBUG2(printf("[SICA] write=%i, id: %i, name=%s, type=%s\n", w, sica_get_array_id(act_band, act_band->loop->stmts[s]->writes[w]->name), act_band->loop->stmts[s]->writes[w]->name, act_band->loop->stmts[s]->writes[w]->symbol->data_type););
+//T		    	IF_DEBUG2(printf("[SICA] write=%i, id: %i, name=%s, type=%s\n", w, sica_get_array_id(act_band, act_band->loop->stmts[s]->writes[w]->name), act_band->loop->stmts[s]->writes[w]->name, act_band->loop->stmts[s]->writes[w]->symbol->data_type););
 		    	IF_DEBUG2(pluto_matrix_print(stdout, act_band->loop->stmts[s]->writes[w]->mat););
 
 		    	//get the access matrix offset caused by tiling dimensions
@@ -788,14 +788,14 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 
 								int new_bytes=0;
 								//IF THE DATA TYPE IS DEFINED
-								if(act_band->loop->stmts[s]->writes[w]->symbol->data_type)    {
-								IF_DEBUG(printf("[SICA] THIS ACCESS IS OF TYPE '%s'!\n", act_band->loop->stmts[s]->writes[w]->symbol->data_type););
-								//COUNT the bytes that have to be loaded for this access
-								new_bytes=sica_get_bytes_of_type(act_band->loop->stmts[s]->writes[w]->symbol->data_type);
-								} else {
+//T								if(act_band->loop->stmts[s]->writes[w]->symbol->data_type)    {
+//T								IF_DEBUG(printf("[SICA] THIS ACCESS IS OF TYPE '%s'!\n", act_band->loop->stmts[s]->writes[w]->symbol->data_type););
+//T								//COUNT the bytes that have to be loaded for this access
+//T								new_bytes=sica_get_bytes_of_type(act_band->loop->stmts[s]->writes[w]->symbol->data_type);
+//T								} else {
 									printf("[SICA] WARNING: The datatype of an array was not recognized and therefore set to a DEFAULT VALUE: %i Bytes!\n", SICA_DEFAULT_DATA_BYTES);
 									new_bytes=SICA_DEFAULT_DATA_BYTES;
-								}
+//T								}
 								//[SICA] update the largest datatype if necessary
 								if(new_bytes>act_band->sicadata->largest_data_type[s]){
 									act_band->sicadata->largest_data_type[s]=new_bytes;
@@ -899,14 +899,14 @@ void sica_get_band_specific_tile_sizes(Band* act_band)    {
 
                                     int new_bytes=0;
                                     //IF THE DATA TYPE IS DEFINED
-                                    if(act_band->loop->stmts[s]->writes[w]->symbol->data_type)    {
-                                        IF_DEBUG(printf("[SICAALL] THIS ACCESS IS OF TYPE '%s'!\n", act_band->loop->stmts[s]->writes[w]->symbol->data_type););
-                                        //COUNT the bytes that have to be loaded for this access
-                                        new_bytes=sica_get_bytes_of_type(act_band->loop->stmts[s]->writes[w]->symbol->data_type);
-                                    } else {
+//T                                    if(act_band->loop->stmts[s]->writes[w]->symbol->data_type)    {
+//T                                        IF_DEBUG(printf("[SICAALL] THIS ACCESS IS OF TYPE '%s'!\n", act_band->loop->stmts[s]->writes[w]->symbol->data_type););
+//T                                        //COUNT the bytes that have to be loaded for this access
+//T                                        new_bytes=sica_get_bytes_of_type(act_band->loop->stmts[s]->writes[w]->symbol->data_type);
+//T                                    } else {
                                         printf("[SICAALL] WARNING: The datatype of an array was not recognized and therefore set to a DEFAULT VALUE: %i Bytes!\n", SICA_DEFAULT_DATA_BYTES);
                                         new_bytes=SICA_DEFAULT_DATA_BYTES;
-                                    }
+//T                                    }
                                     //[SICAALL] update the largest datatype if necessary
                                     if(new_bytes>act_band->sicadata->largest_data_type[s]){
                                         act_band->sicadata->largest_data_type[s]=new_bytes;
