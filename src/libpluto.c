@@ -507,3 +507,38 @@ int pluto_schedule_osl(osl_scop_p scop,
 
   return EXIT_SUCCESS;
 }
+
+void pluto_schedule_str(const char *domains_str,
+        const char *dependences_str,
+        char** schedule_str_buffer_ptr,
+        int *schedule_strlen,
+        PlutoOptions *options) {
+
+    printf("\n\n\n\n>>>>>DOMAINS: %s\n\n\n\n", domains_str);
+    printf("\n\n\n\n>>>>>dependences: %s\n\n\n", dependences_str);
+
+    isl_ctx *ctx = isl_ctx_alloc();
+    isl_union_set *domains = isl_union_set_read_from_str(ctx, domains_str);
+    isl_union_map *dependences = isl_union_map_read_from_str(ctx, 
+            dependences_str);
+
+    isl_union_map *schedule = pluto_schedule(domains, dependences, options);
+
+    isl_printer *printer = isl_printer_to_str(ctx);
+    isl_printer_print_union_map(printer, schedule);
+    
+    char *printed_str = isl_printer_get_str(printer);
+    
+    char *schedule_str_buffer = malloc(strlen(printed_str) + 1);
+    strcpy(schedule_str_buffer, printed_str);
+    
+    *schedule_str_buffer_ptr = schedule_str_buffer;
+    *schedule_strlen = strlen(printed_str);
+
+    isl_printer_free(printer);
+    isl_union_set_free(domains);
+    isl_union_map_free(dependences);
+
+    isl_ctx_free(ctx);
+
+}
