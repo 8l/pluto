@@ -510,8 +510,7 @@ int pluto_schedule_osl(osl_scop_p scop,
 
 void pluto_schedule_str(const char *domains_str,
         const char *dependences_str,
-        char** schedule_str_buffer_ptr,
-        int *schedule_strlen,
+        char** schedules_str_buffer_ptr,
         PlutoOptions *options) {
 
     printf("\n\n\n\n>>>>>DOMAINS: %s\n\n\n\n", domains_str);
@@ -527,17 +526,14 @@ void pluto_schedule_str(const char *domains_str,
     isl_printer *printer = isl_printer_to_str(ctx);
     isl_printer_print_union_map(printer, schedule);
     
-    char *printed_str = isl_printer_get_str(printer);
-    
-    char *schedule_str_buffer = malloc(strlen(printed_str) + 1);
-    strcpy(schedule_str_buffer, printed_str);
-    
-    *schedule_str_buffer_ptr = schedule_str_buffer;
-    *schedule_strlen = strlen(printed_str);
-
+    *schedules_str_buffer_ptr = isl_printer_get_str(printer);
+    assert(*schedules_str_buffer_ptr != NULL && "isl printer providing empty"
+                                               " string");
+   
     isl_printer_free(printer);
     isl_union_set_free(domains);
     isl_union_map_free(dependences);
+    isl_union_map_free(schedule);
 
     isl_ctx_free(ctx);
 

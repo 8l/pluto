@@ -169,10 +169,10 @@ void pluto_options_free(PlutoOptions *);
 __isl_give isl_union_map *pluto_schedule(isl_union_set *domains,
         isl_union_map *dependences,
         PlutoOptions *options);
+
 void pluto_schedule_str(const char *domains_str,
         const char *dependences_str,
-        char** schedule_str_buffer_ptr,
-        int *schedule_strlen,
+        char** schedules_str_buffer_ptr,
         PlutoOptions *options);
 
 int pluto_schedule_osl(osl_scop_p scop, 
