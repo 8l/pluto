@@ -513,9 +513,6 @@ void pluto_schedule_str(const char *domains_str,
         char** schedules_str_buffer_ptr,
         PlutoOptions *options) {
 
-    printf("\n\n\n\n>>>>>DOMAINS: %s\n\n\n\n", domains_str);
-    printf("\n\n\n\n>>>>>dependences: %s\n\n\n", dependences_str);
-
     isl_ctx *ctx = isl_ctx_alloc();
     isl_union_set *domains = isl_union_set_read_from_str(ctx, domains_str);
     isl_union_map *dependences = isl_union_map_read_from_str(ctx, 
