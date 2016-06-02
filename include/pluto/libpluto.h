@@ -185,6 +185,11 @@ void pluto_schedule_str(const char *domains_str,
         char** schedules_str_buffer_ptr,
         PlutoOptions *options);
 
+/*
+Free the string stored in schedules_str_buffer_ptr
+*/
+void pluto_schedules_strbuf_free(char *schedules_str_buffer);
+
 int pluto_schedule_osl(osl_scop_p scop, 
         PlutoOptions *options_l);
 #if defined(__cplusplus)

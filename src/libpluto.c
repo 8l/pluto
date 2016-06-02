@@ -535,3 +535,7 @@ void pluto_schedule_str(const char *domains_str,
     isl_ctx_free(ctx);
 
 }
+
+void pluto_schedules_strbuf_free(char *schedules_str_buffer) {
+  free(schedules_str_buffer);
+}
