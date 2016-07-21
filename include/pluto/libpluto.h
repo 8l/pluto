@@ -8,6 +8,9 @@
 #if defined(__cplusplus)
 extern "C" {
 #endif
+
+#define int64 long long int
+
 struct plutoOptions{
 
     /* To tile or not? */
@@ -21,6 +24,28 @@ struct plutoOptions{
 
     /* Load-balanced tiling (one dimensional concurrent start)*/
     int partlbtile;
+
+    /* Extract scop information from libpet*/
+    int pet;
+
+    /* dynamic scheduling 
+     * using Synthesized Runtime Interface */
+    int dynschedule;
+
+    /* dynamic scheduling - previous technique of 
+     * building the entire task graph in memory 
+     * using Intel TBB Flow Graph scheduler */
+    int dynschedule_graph;
+
+    /* dynamic scheduling - previous technique of 
+     * building the entire task graph in memory 
+     * using a custom DAG scheduler */
+    // no longer maintained
+    int dynschedule_graph_old;
+
+    /* consider transitive dependences between tasks */
+    int dyn_trans_deps_tasks;
+
     /* parallelization */
     int parallel;
 
@@ -87,6 +112,9 @@ struct plutoOptions{
     /* Identity transformation */
     int identity;
 
+    /* Identity transformation */
+    int identity_data_dist;
+
     /* Generate scheduling pragmas for Bee+Cl@k */
     int bee;
 
@@ -138,8 +166,62 @@ struct plutoOptions{
     /* Use isl as ilp solver. */
     int islsolve;
 
+    int glpksolve;
+
     /* Index set splitting */
     int iss;
+
+    int distmem;
+
+    /*  adding support to generate opencl code */
+    int opencl; 
+
+    /* use multi-level distribution function */
+    /* for dynamic scheduling or distributed-memory code */
+    /* OFF by default */
+    int multi_level_distribution;
+
+    int commopt;
+
+    /*Communication code generation using flow-out partitioning */
+    int commopt_fop;
+    /* generate code to choose between unicast pack and multicast pack 
+     * for each partition at runtime */
+    int fop_unicast_runtime;
+
+    /*Communication code generation using flow-out intersection flow-in */
+    int commopt_foifi;
+
+    /*Report communication for distributed memory*/
+    int timereport;
+
+    /* if true, variables are not declared globally
+     * but each variable's declaration is provided 
+     * through the macro '#define __DECLARATION_OF_<variable-name> <declaration>'*/
+    int variables_not_global;
+
+    int data_dist;
+    int verify_output;
+
+    int mpiomp;
+    int fusesends;
+    int blockcyclic;
+    int cyclesize;
+
+    //enables mod eliminate and data ptr optimization for data tiling
+    int data_tile_opt;
+
+    //Propagates the bounding box constraints across non fused loops
+    int global_opt;
+
+    //auto compute pi
+    int compute_pi;
+
+    //max number of tiles to be used while computing pi
+    int num_tiles_per_dim;
+
+    //number of initial partitions used while computing pi
+    int num_inital_partitions;
 
     /* Output file name supplied from -o */
     char *out_file;
@@ -147,8 +229,17 @@ struct plutoOptions{
     /* Polyhedral compile time stats */
     int time;
 
+    /* Experimental optimizations to make Pluto faster/scalable */
+    int fast;
+
+    /* Eliminate Farkas multipliers using PolyLib */
+    int efup;
+
     /* fast linear independence check */
     int flic;
+
+    /* SCoP number when processing multiple SCoPs per file */
+    int scopnum;
 };
 typedef struct plutoOptions PlutoOptions;
 
@@ -163,9 +254,25 @@ typedef struct plutoOptions PlutoOptions;
 #define SMART_FUSE 2
 
 
+struct remapping {
+    PlutoMatrix **stmt_inv_matrices; 
+    int **stmt_divs;
+};
+typedef struct remapping Remapping;
+
 PlutoOptions *pluto_options_alloc();
 void pluto_options_free(PlutoOptions *);
 
+Remapping *pluto_remapping_alloc();
+void pluto_remapping_free(Remapping *);
+
+Remapping *pluto_get_remapping(isl_union_set *domains,
+        isl_union_map *dependences, PlutoOptions *options);
+
+void pluto_get_remapping_str(const char *domains_str,
+        const char *dependences_str,
+        Remapping **remapping_ptr,
+        PlutoOptions *options);
 
 __isl_give isl_union_map *pluto_schedule(isl_union_set *domains,
         isl_union_map *dependences,
@@ -173,9 +280,6 @@ __isl_give isl_union_map *pluto_schedule(isl_union_set *domains,
 
 int pluto_schedule_osl(osl_scop_p scop, 
         PlutoOptions *options_l);
-#if defined(__cplusplus)
-}
-#endif
 
 
 /*
@@ -198,5 +302,7 @@ Free the string stored in schedules_str_buffer_ptr
 */
 void pluto_schedules_strbuf_free(char *schedules_str_buffer);
 
-
+#if defined(__cplusplus)
+}
+#endif
 #endif
