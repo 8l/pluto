@@ -2,6 +2,7 @@
 #define __LIBPLUTO__
 #include "isl/union_set.h"
 #include "isl/union_map.h"
+#include "../../src/math_support.h"
 
 #include "osl/scop.h"
 
