@@ -255,6 +255,7 @@ typedef struct plutoOptions PlutoOptions;
 
 
 struct remapping {
+    int nstmts;
     PlutoMatrix **stmt_inv_matrices; 
     int **stmt_divs;
 };
@@ -263,16 +264,20 @@ typedef struct remapping Remapping;
 PlutoOptions *pluto_options_alloc();
 void pluto_options_free(PlutoOptions *);
 
-Remapping *pluto_remapping_alloc();
 void pluto_remapping_free(Remapping *);
 
+/*
+given domains and dependences, provide the remapping information 
+which tells how to map points in the range back to points in the
+domain. (That is, it explicitly provides the _inverse_ transform of the
+schedule in the form of a matrix).
+
+This is useful during code generation to generate the correct access
+indices of the range in terms of the domain variables.
+*/
 Remapping *pluto_get_remapping(isl_union_set *domains,
         isl_union_map *dependences, PlutoOptions *options);
 
-void pluto_get_remapping_str(const char *domains_str,
-        const char *dependences_str,
-        Remapping **remapping_ptr,
-        PlutoOptions *options);
 
 __isl_give isl_union_map *pluto_schedule(isl_union_set *domains,
         isl_union_map *dependences,
@@ -283,7 +288,7 @@ int pluto_schedule_osl(osl_scop_p scop,
 
 
 /*
-This function is a HACK. The reason this exists is to allow for easy FFI
+These functions are a HACK. The reason this exists is to allow for easy FFI
 between PolyMage and Pluto. Sending isl objects between PyIsl to libpluto is
 hard (because PyIsl does not seem to have a way to access the underlying C
 object pointer).
@@ -295,6 +300,12 @@ isl object.
 void pluto_schedule_str(const char *domains_str,
         const char *dependences_str,
         char** schedules_str_buffer_ptr,
+        PlutoOptions *options);
+
+
+void pluto_get_remapping_str(const char *domains_str,
+        const char *dependences_str,
+        Remapping **remapping_ptr,
         PlutoOptions *options);
 
 /*

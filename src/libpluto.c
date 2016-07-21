@@ -297,6 +297,7 @@ Remapping *pluto_get_remapping(isl_union_set *domains,
     }
 
     Remapping *remapping = (Remapping *)malloc(sizeof(Remapping));
+    remapping->nstmts = prog->nstmts;
     remapping->stmt_inv_matrices = 
         (PlutoMatrix **)malloc(sizeof(PlutoMatrix *) * prog->nstmts);
     remapping->stmt_divs = (int **)malloc(sizeof(int *) * prog->nstmts);
@@ -629,20 +630,11 @@ int pluto_schedule_osl(osl_scop_p scop,
 }
 
 
-/*
-Remapping *pluto_remapping_alloc() {
-    Remapping *remapping = (Remapping *)malloc(sizeof(Remapping));
-    remapping->stmt_divs = NULL;
-    remapping->stmt_inv_matrices = NULL;
-
-    return remapping;
-};
 
 void pluto_remapping_free(Remapping *remapping) {
     assert(remapping != NULL);
     free(remapping);
 };
-*/
 
 
 void pluto_get_remapping_str(const char *domains_str,
